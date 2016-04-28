@@ -1,13 +1,16 @@
 package CurveAnalyser;
 
+import sun.reflect.annotation.ExceptionProxy;
+
 import java.sql.Connection;
 import java.sql.ResultSet;
+import java.sql.SQLException;
 import java.sql.Statement;
 
 /**
  * Created by Flexscan2243 on 24.04.2016.
  */
-public class CalculateInputs {
+public class CalculateBlocks {
     /**
      * Statistical metrics parameters
      */
@@ -41,11 +44,11 @@ public class CalculateInputs {
     private Connection conn;
     private int p = 0;
 
-    public CalculateInputs(Connection conn) {
+    public CalculateBlocks(Connection conn) {
         this.conn = conn;
 
         /**
-         * PDF data initialization
+         * Block data initialization
          */
         abInput = new double[AB_BIN_NUM + 1];
         abcInput = new double[ABC_BIN_NUM + 1];
@@ -66,52 +69,92 @@ public class CalculateInputs {
         bacSum = 0;
     }
 
-    public void startCalculatePDFs() {
+    public void startCalculateBlocks() {
         try {
             /**
              * Get a list of users' sessionIDs
              */
             String currSessionID;
+            int currBlockID;
             String SQL_CP_SID = "SELECT DISTINCT sessionID FROM `curveparameters`";
             Statement stmtCpsid = conn.createStatement();
             ResultSet rsCpsid = stmtCpsid.executeQuery(SQL_CP_SID);
             while (rsCpsid.next()) {
                 currSessionID = rsCpsid.getString("sessionID");
+                currBlockID = 0;
 
                 /**
-                 * Get a list of curves
+                 *check if SessionID exists in CurveParameters, if it does get another SessionID
                  */
-                String SQL_CP_CID = "SELECT DISTINCT curveID FROM `curveparameters` WHERE sessionID = '"+currSessionID+"'";
-                Statement stmtCpcid = conn.createStatement();
-                ResultSet rsCpcid = stmtCpcid.executeQuery(SQL_CP_CID);
-
-                while (rsCpcid.next()) {
+                String SQL_B_SID = "SELECT sessionID FROM `blocks` WHERE sessionID = '"+currSessionID+"' LIMIT 1";
+                Statement stmtBsid = conn.createStatement();
+                ResultSet rsBsid = stmtBsid.executeQuery(SQL_B_SID);
+                if (!rsBsid.isBeforeFirst()) {
                     /**
-                     *
+                     * Get a list of curves
                      */
-                    histograms(rsCpcid);
-                    if (blockIterator == BLOCK_SIZE){
-                        //normHist();
-                        hist2cdf();
+                    String SQL_CP_CID = "SELECT DISTINCT curveID FROM `curveparameters` WHERE sessionID = '"+currSessionID+"'";
+                    Statement stmtCpcid = conn.createStatement();
+                    ResultSet rsCpcid = stmtCpcid.executeQuery(SQL_CP_CID);
+
+                    while (rsCpcid.next()) {
                         /**
-                         * create an input for the libSVM
+                         *
                          */
-                        createSVMsample();
-                        /**
-                         * clear all block PDF data
-                         */
-                        resetPDFdata();
-                    }
-                    else {
-                        blockIterator++;
+                        histograms(rsCpcid);
+                        if (blockIterator == BLOCK_SIZE) {
+                            //normHist();
+                            hist2cdf();
+                            /**
+                             * save a block in database
+                             */
+                            createSVMsample();
+                            sendBlock(currSessionID, currBlockID);
+                            /**
+                             * clear all blocks' data
+                             */
+                            resetBlockData();
+
+                            /**
+                             * iterate the current block's ID
+                             */
+                            currBlockID++;
+                        } else {
+                            blockIterator++;
+                        }
                     }
                 }
 
             }
-            System.out.println("p: " + p);
         }
-        catch (Exception e) {System.out.println("Error1");}
+        catch (SQLException e) {System.out.println("Error1");}
     }
+    public void sendBlock(String currSessionID, int currBlockID){
+        try {
+            String SQL_B_ALL;
+            Statement stmtBall;
+            for(int i = 0; i<= AB_BIN_NUM; i++){
+                SQL_B_ALL = "INSERT INTO blocks (sessionID, blockID, feature) VALUES ( '"+currSessionID+"', '"+currBlockID+"', '"+abInput[i]+"')";
+                stmtBall = conn.createStatement();
+                stmtBall.executeQuery(SQL_B_ALL);
+            }
+
+            for(int i = 0; i<= ABC_BIN_NUM; i++){
+                SQL_B_ALL = "INSERT INTO blocks (sessionID, blockID, feature) VALUES ( '"+currSessionID+"', '"+currBlockID+"', '"+abcInput[i]+"')";
+                stmtBall = conn.createStatement();
+                stmtBall.executeQuery(SQL_B_ALL);
+            }
+
+            for(int i = 0; i<= BAC_BIN_NUM; i++){
+                SQL_B_ALL = "INSERT INTO blocks (sessionID, blockID, feature) VALUES ( '"+currSessionID+"', '"+currBlockID+"', '"+bacInput[i]+"')";
+                stmtBall = conn.createStatement();
+                stmtBall.executeQuery(SQL_B_ALL);
+            }
+            System.out.println("end");
+        }
+        catch(Exception e){System.out.println("error");}
+    }
+
     public void createSVMsample(){
 
         for(int i = 0; i<= AB_BIN_NUM; i++){
@@ -125,7 +168,7 @@ public class CalculateInputs {
         }
     }
 
-    public void resetPDFdata(){
+    public void resetBlockData(){
         abInput = new double[AB_BIN_NUM + 1];
         abcInput = new double[ABC_BIN_NUM + 1];
         bacInput = new double[BAC_BIN_NUM + 1];
@@ -178,7 +221,7 @@ public class CalculateInputs {
         }
 
         /**
-         * Normalize histograms- Create discrete PDFs
+         * Normalize histograms
          */
         for(int i = 0; i<= AB_BIN_NUM; i++){
             abInput[i] = Math.round((abInput[i]/(abSum)) * PDF_PRECISION)/PDF_PRECISION;
@@ -212,7 +255,7 @@ public class CalculateInputs {
         double tempSum = 0; /**< a temporary sum for every histogram*/
 
 
-         for(int i = 0; i<= AB_BIN_NUM; i++){
+        for(int i = 0; i<= AB_BIN_NUM; i++){
              tempSum = tempSum + abInput[i];
              abInput[i] = (Math.round((tempSum / abSum) * PDF_PRECISION))/PDF_PRECISION;
 

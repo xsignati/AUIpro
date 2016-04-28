@@ -4,6 +4,7 @@ package CurveAnalyser; /**
 
 import java.sql.Connection;
 import java.sql.DriverManager;
+import java.sql.SQLException;
 
 public class CurveAnalyser {
     private String dbName;
@@ -13,7 +14,7 @@ public class CurveAnalyser {
     private Connection conn;
     private DetermineCurves dc;
     private CalculateMetrics cm;
-    private CalculateInputs cp;
+    private CalculateBlocks cp;
 
     public CurveAnalyser(){
         dbName = "databasec1";
@@ -30,16 +31,19 @@ public class CurveAnalyser {
                 userName,
                 password);
 
+            conn.setAutoCommit(false); /**< much faster for inserts, safe for tables with timestamps */
             dc = new DetermineCurves(conn);
             dc.startDetermineCurves();
             cm = new CalculateMetrics(conn);
             cm.startCalculateMetrics();
-            cp = new CalculateInputs(conn);
-            cp.startCalculatePDFs();
+            conn.commit(); /**< execute all queries */
+            conn.setAutoCommit(true); /**< a safe option for table with no timestamp column */
+            cp = new CalculateBlocks(conn);
+            cp.startCalculateBlocks();
 
             conn.close();
         }
-        catch(Exception e){System.out.println("..");}
+        catch(SQLException e){System.out.println("..");}
 
     }
 

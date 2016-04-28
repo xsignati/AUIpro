@@ -82,6 +82,7 @@ public class CalculateMetrics {
                 Statement stmtCpAll = conn.createStatement();
                 ResultSet rsCpAll = stmtCpAll.executeQuery(sqlCpAll);
 
+
                 /**
                  * Remove the first one point of all three. New point will be added to compute new metrics
                  */
