@@ -126,6 +126,7 @@ public class CalculateMetrics {
          *count angle AB-horizontal
          */
         double angle = Math.atan2(vectorAB.getY(), vectorAB.getX());
+        angle = angle > 0 ? angle : (angle + 2 * Math.PI);
 
         /**
          *$angle > 0 ? $angle : $angle += pi();
