@@ -1,0 +1,172 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<form xmlns="http://www.intellij.com/uidesigner/form/" version="1" bind-to-class="CurveAnalyser.Gui">
+  <grid id="27dc6" binding="panel1" default-binding="true" layout-manager="GridLayoutManager" row-count="7" column-count="6" same-size-horizontally="false" same-size-vertically="false" hgap="-1" vgap="-1">
+    <margin top="0" left="30" bottom="30" right="30"/>
+    <constraints>
+      <xy x="20" y="20" width="1370" height="772"/>
+    </constraints>
+    <properties>
+      <background color="-12828863"/>
+      <foreground color="-2235157"/>
+    </properties>
+    <border type="etched"/>
+    <children>
+      <component id="e1f9c" class="javax.swing.JLabel">
+        <constraints>
+          <grid row="0" column="0" row-span="1" col-span="5" vsize-policy="0" hsize-policy="0" anchor="8" fill="0" indent="0" use-parent-layout="false"/>
+        </constraints>
+        <properties>
+          <background color="-2235157"/>
+          <foreground color="-2235157"/>
+          <text value="AUI internet users analyser"/>
+        </properties>
+      </component>
+      <component id="3aad6" class="javax.swing.JButton" binding="trainSVMButton" default-binding="true">
+        <constraints>
+          <grid row="3" column="5" row-span="1" col-span="1" vsize-policy="7" hsize-policy="3" anchor="0" fill="1" indent="0" use-parent-layout="false"/>
+        </constraints>
+        <properties>
+          <background color="-9999763"/>
+          <font size="18"/>
+          <foreground color="-1315861"/>
+          <opaque value="true"/>
+          <text value="Train SVM"/>
+        </properties>
+      </component>
+      <component id="f369" class="javax.swing.JButton" binding="testSVMButton" default-binding="true">
+        <constraints>
+          <grid row="6" column="5" row-span="1" col-span="1" vsize-policy="7" hsize-policy="3" anchor="0" fill="1" indent="0" use-parent-layout="false"/>
+        </constraints>
+        <properties>
+          <background color="-9999763"/>
+          <borderPainted value="true"/>
+          <contentAreaFilled value="true"/>
+          <font size="18"/>
+          <foreground color="-2235157"/>
+          <text value="Test SVM"/>
+        </properties>
+      </component>
+      <component id="46104" class="javax.swing.JProgressBar" binding="progressBar1" default-binding="true">
+        <constraints>
+          <grid row="4" column="0" row-span="1" col-span="4" vsize-policy="1" hsize-policy="1" anchor="0" fill="1" indent="0" use-parent-layout="false"/>
+        </constraints>
+        <properties>
+          <background color="-6052957"/>
+          <foreground color="-2235157"/>
+          <stringPainted value="true"/>
+        </properties>
+      </component>
+      <component id="33d9a" class="javax.swing.JButton" binding="calculateBlocksButton" default-binding="true">
+        <constraints>
+          <grid row="1" column="0" row-span="3" col-span="4" vsize-policy="7" hsize-policy="3" anchor="0" fill="1" indent="2" use-parent-layout="false"/>
+        </constraints>
+        <properties>
+          <background color="-9999763"/>
+          <focusCycleRoot value="false"/>
+          <font size="18"/>
+          <foreground color="-2235157"/>
+          <horizontalAlignment value="0"/>
+          <rolloverEnabled value="true"/>
+          <text value="Calculate Blocks"/>
+          <toolTipText value="Connect to database. Determine curves. Calculate angle based metrics. Prepare feature vectors for SVM (blocks)"/>
+        </properties>
+      </component>
+      <scrollpane id="4f5c2">
+        <constraints>
+          <grid row="5" column="0" row-span="1" col-span="4" vsize-policy="7" hsize-policy="7" anchor="0" fill="3" indent="0" use-parent-layout="false">
+            <minimum-size width="265" height="64"/>
+            <preferred-size width="390" height="130"/>
+          </grid>
+        </constraints>
+        <properties>
+          <font size="22"/>
+          <verticalScrollBarPolicy value="20"/>
+        </properties>
+        <border type="none"/>
+        <children>
+          <component id="cd872" class="javax.swing.JTextArea" binding="textArea1" default-binding="true">
+            <constraints/>
+            <properties>
+              <background color="-14803426"/>
+              <editable value="false"/>
+              <font size="14"/>
+              <foreground color="-2235157"/>
+            </properties>
+          </component>
+        </children>
+      </scrollpane>
+      <scrollpane id="79ef1">
+        <constraints>
+          <grid row="2" column="5" row-span="1" col-span="1" vsize-policy="7" hsize-policy="7" anchor="0" fill="3" indent="0" use-parent-layout="false">
+            <minimum-size width="175" height="64"/>
+            <preferred-size width="330" height="130"/>
+          </grid>
+        </constraints>
+        <properties/>
+        <border type="none"/>
+        <children>
+          <component id="fd8ea" class="javax.swing.JList" binding="list1" default-binding="true">
+            <constraints/>
+            <properties>
+              <background color="-14803426"/>
+              <foreground color="-2235157"/>
+              <selectionBackground color="-9999763"/>
+              <selectionForeground color="-2235157"/>
+            </properties>
+          </component>
+        </children>
+      </scrollpane>
+      <scrollpane id="fe4e9">
+        <constraints>
+          <grid row="5" column="5" row-span="1" col-span="1" vsize-policy="7" hsize-policy="7" anchor="0" fill="3" indent="0" use-parent-layout="false">
+            <minimum-size width="175" height="64"/>
+            <preferred-size width="330" height="130"/>
+          </grid>
+        </constraints>
+        <properties/>
+        <border type="none"/>
+        <children>
+          <component id="d3cc3" class="javax.swing.JList" binding="list2" default-binding="true">
+            <constraints/>
+            <properties>
+              <background color="-14803426"/>
+              <foreground color="-2235157"/>
+              <selectionBackground color="-9999763"/>
+              <selectionForeground color="-2235157"/>
+            </properties>
+          </component>
+        </children>
+      </scrollpane>
+      <component id="9fdd1" class="javax.swing.JButton" binding="button1" default-binding="true">
+        <constraints>
+          <grid row="6" column="3" row-span="1" col-span="1" vsize-policy="0" hsize-policy="6" anchor="0" fill="1" indent="0" use-parent-layout="false"/>
+        </constraints>
+        <properties>
+          <background color="-9999763"/>
+          <foreground color="-2235157"/>
+          <text value="Instructions"/>
+        </properties>
+      </component>
+      <component id="489d8" class="javax.swing.JButton" binding="button2" default-binding="true">
+        <constraints>
+          <grid row="6" column="2" row-span="1" col-span="1" vsize-policy="0" hsize-policy="6" anchor="0" fill="1" indent="0" use-parent-layout="false"/>
+        </constraints>
+        <properties>
+          <background color="-9999763"/>
+          <foreground color="-2235157"/>
+          <text value="Button"/>
+        </properties>
+      </component>
+      <component id="4e7c1" class="javax.swing.JButton" binding="button3" default-binding="true">
+        <constraints>
+          <grid row="6" column="1" row-span="1" col-span="1" vsize-policy="0" hsize-policy="6" anchor="0" fill="1" indent="0" use-parent-layout="false"/>
+        </constraints>
+        <properties>
+          <background color="-9999763"/>
+          <foreground color="-2235157"/>
+          <text value="Button"/>
+        </properties>
+      </component>
+    </children>
+  </grid>
+</form>
