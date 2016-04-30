@@ -81,7 +81,9 @@ public class CurveAnalyser {
         }
         catch(SQLException e){System.out.println("Cannot achieve db");}
     }
-    public void trainSVM(){}
+    public void trainSVM(){
+        System.out.println("A");
+    }
     public void testSVM(){}
 
     public Connection getConn() {

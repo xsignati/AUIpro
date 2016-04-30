@@ -35,23 +35,61 @@ public class Gui{
     private Gui gui;
     private Subsidiaries.CAmode caMode;
 
+    private Runnable[] guiRunners;
+    private Thread[] guiThreads;
+
 
 
 
     public Gui(CurveAnalyser ca) {
         this.ca = ca;
         this.gui = this;
+
+        /**
+         * Threads
+         */
+        guiRunners = new Runnable[3];
+        guiThreads = new Thread[3];
+
+        Subsidiaries.CAmode [] tabMod = {caMode.CALCULATE, caMode.TRAIN, caMode.TEST};
+        for (int i = 0 ; i < 3 ; i++) {
+            guiRunners[i] = new Subsidiaries().new GuiRun(ca, gui, tabMod[i]);
+            guiThreads[i] = new Thread(guiRunners[i]);
+        }
+
+        /**
+         * Buttons
+         */
+
         calculateBlocksButton.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                Runnable runner = new Runnable()
-                {
-                    public void run() {
-                        ca.startCurveAnalyser(gui, caMode.CALCULATE);
-                    }
-                };
-                Thread t = new Thread(runner, "CALCULATE exectuer");
-                t.start();
+                guiThreads[0] = new Thread(guiRunners[0]);
+                guiThreads[0].start();
+//                Thread first = new Thread(new Runnable() {
+//                    @Override
+//                    public void run() {
+//                        ca.startCurveAnalyser(gui, caMode.CALCULATE);
+//                    }
+//                });
+//                first.start();
+
+            }
+        });
+
+        trainSVMButton.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+//                for (String a : getList1IDs()){
+//                    System.out.println(a);
+//                }
+                if(processWorking()){
+                    updateTextArea("Another process is working. Wait until it finishes!");
+                    textArea1.setForeground(Color.RED);
+                }
+                else{
+                       System.out.println("Aaa");
+                }
             }
         });
 
@@ -88,14 +126,10 @@ public class Gui{
                         + "Test SVM: test if a chosen sample belongs to the user");
             }
         });
-        trainSVMButton.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                for (String a : getList1IDs()){
-                    System.out.println(a);
-                }
-            }
-        });
+
+
+
+
 
     }
 
@@ -124,6 +158,13 @@ public class Gui{
 
         }
         catch(SQLException e){}
+    }
+
+    public boolean processWorking(){
+        if (guiThreads[0].isAlive() || guiThreads[1].isAlive() || guiThreads[2].isAlive()){
+            return true;
+        }
+        else {return false;}
     }
 
 
