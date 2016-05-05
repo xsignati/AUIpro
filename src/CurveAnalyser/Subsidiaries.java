@@ -5,7 +5,7 @@ package CurveAnalyser;
  */
 public class Subsidiaries {
     public enum CAmode{
-        CALCULATE, TRAIN, TEST;
+        CALCULATE, TRAIN, TEST
     }
 
     public class GuiRun implements Runnable {

@@ -2,11 +2,7 @@ package CurveAnalyser; /**
  * Created by Flexscan2243 on 20.04.2016.
  */
 
-import javax.swing.*;
-import java.awt.*;
-import java.sql.Connection;
-import java.sql.DriverManager;
-import java.sql.SQLException;
+import java.sql.*;
 
 public class CurveAnalyser {
     private String dbName;
@@ -17,6 +13,12 @@ public class CurveAnalyser {
     private DetermineCurves dc;
     private CalculateMetrics cm;
     private CalculateBlocks cp;
+    private TrainSVM tsvm;
+
+    public static final String CALC_OK = "All blocks (feature vectors) calculated successfully";
+    public static final String TRAIN_OK = "Training completed successfully";
+    public static final String TRAIN_E_1 = "Not enough number of negative data samples (related with a selected sessionID";
+    public static final String TRAIN_E_2 = "Not enough number of positive data samples (environment testing data)";
 
     public CurveAnalyser(){
         dbName = "databasec1";
@@ -45,10 +47,10 @@ public class CurveAnalyser {
     public void startCurveAnalyser(Gui gui, Subsidiaries.CAmode mode){
         switch (mode) {
             case CALCULATE :
-                calculateFeatureVectors(gui);
+                calculateAllFeatures(gui);
                 break;
             case TRAIN :
-                trainSVM();
+                trainSVM(gui);
                 break;
             case TEST :
                 testSVM();
@@ -58,31 +60,43 @@ public class CurveAnalyser {
         }
     }
 
-    public void calculateFeatureVectors(Gui gui){
+    public void calculateAllFeatures(Gui gui){
         try {
             System.out.println("aaa");
             dbConnect();
 
             conn.setAutoCommit(false); /**< much faster for inserts, safe for tables with timestamps */
-            gui.updateBar(25, new Color(255,135,135));
+            gui.updateBar(25, Gui.S_RED);
             dc = new DetermineCurves(conn);
             dc.startDetermineCurves();
-            gui.updateBar(50, new Color(255,135,135));
+            gui.updateBar(50, Gui.S_RED);
             cm = new CalculateMetrics(conn);
             cm.startCalculateMetrics();
-            gui.updateBar(75, new Color(255,135,135));
-            conn.commit(); /**< execute all queries */
-            conn.setAutoCommit(true); /**< a safe option for table with no timestamp column */
+            gui.updateBar(75, Gui.S_RED);
             cp = new CalculateBlocks(conn);
             cp.startCalculateBlocks();
-            gui.updateBar(100, new Color(163,255,135));
-            gui.updateTextArea("All blocks (feature vectors) calculated successfully");
+            gui.updateBar(100, Gui.S_GREEN);
+            gui.updateTextArea(CALC_OK, Gui.S_GREEN);
+            conn.commit(); /**< execute all queries */
+            conn.setAutoCommit(true); /**< a safe option for table with no timestamp column */
             dbDisconnect();
         }
         catch(SQLException e){System.out.println("Cannot achieve db");}
     }
-    public void trainSVM(){
-        System.out.println("A");
+    public void trainSVM(Gui gui){
+        dbConnect();
+        tsvm = new TrainSVM(conn);
+        int tsvmRes = tsvm.startTrainSVM(gui);
+        if(tsvmRes == 0){
+            gui.updateTextArea(TRAIN_OK, Gui.S_GREEN);
+        }
+        else if(tsvmRes == 1){
+            gui.updateTextArea(TRAIN_E_1, Gui.S_RED);
+        }
+        else if(tsvmRes == 2){
+            gui.updateTextArea(TRAIN_E_2, Gui.S_RED);
+        }
+        dbDisconnect();
     }
     public void testSVM(){}
 

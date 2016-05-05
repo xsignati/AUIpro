@@ -16,8 +16,9 @@ public class Main {
         frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         frame.setMinimumSize(new Dimension(584, 330));
         frame.setPreferredSize(new Dimension(854, 480));
-        //frame.setPreferredSize();
+        frame.setTitle("AUI");
         frame.pack();
+        frame.setLocationRelativeTo(null);
         frame.setVisible(true);
         gui.guiInit();
 

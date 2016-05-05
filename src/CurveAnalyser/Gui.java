@@ -24,6 +24,7 @@ public class Gui{
     private JList list1;
     private DefaultListModel model1;
     private ArrayList<String> list1IDs;
+    private String trainOptSel;
     private DefaultListModel model2;
     private JButton testSVMButton;
     private JProgressBar progressBar1;
@@ -38,8 +39,24 @@ public class Gui{
     private Runnable[] guiRunners;
     private Thread[] guiThreads;
 
+    public static final Color S_RED = new Color(255,135,135);
+    public static final Color S_WHITE = new Color(235,235,235);
+    public static final Color S_GREEN = new Color(163,255,135);
+    public static final String INFO = "AUI 2016 internet users analyser." + "\n" + "\n"
+            + "Calculate blocks: Determine curves within mouse movements," + "\n"
+            + "angle based metrics and SVM feature vectors (blocks) " + "\n" + "\n"
+            + "Train SVM: train the Support Vector Machine with a" + "\n"
+            + "chosen user's metric and all the other users signatures " + "\n" + "\n"
+            + "Test SVM: test if a chosen sample belongs to the user";
+    public static final String TRAIN_STR = "Training started...";
+    public static final String SELECT_SID = "Select one SessionID!";
+    public static final String ANOTHER_PR = "Another process is working. Wait until it finishes!";
+    public static final String CALC = "Calculating...";
 
 
+    public String getTrainOptSel() {
+        return trainOptSel;
+    }
 
     public Gui(CurveAnalyser ca) {
         this.ca = ca;
@@ -60,12 +77,18 @@ public class Gui{
         /**
          * Buttons
          */
-
         calculateBlocksButton.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                guiThreads[0] = new Thread(guiRunners[0]);
-                guiThreads[0].start();
+                if(processWorking()){
+                    updateTextArea(ANOTHER_PR, S_RED);
+                }
+                else{
+                    updateTextArea(CALC, S_GREEN);
+                    guiThreads[0] = new Thread(guiRunners[0]);
+                    guiThreads[0].start();
+
+                }
 //                Thread first = new Thread(new Runnable() {
 //                    @Override
 //                    public void run() {
@@ -80,16 +103,21 @@ public class Gui{
         trainSVMButton.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-//                for (String a : getList1IDs()){
-//                    System.out.println(a);
-//                }
+
                 if(processWorking()){
-                    updateTextArea("Another process is working. Wait until it finishes!");
-                    textArea1.setForeground(Color.RED);
+                    updateTextArea(ANOTHER_PR, S_RED);
+                }
+                else if(trainOptSel.isEmpty()){
+                    updateTextArea(SELECT_SID, S_RED);
+
                 }
                 else{
-                       System.out.println("Aaa");
+                    updateTextArea(TRAIN_STR, S_GREEN);
+                    guiThreads[1] = new Thread(guiRunners[1]);
+                    guiThreads[1].start();
+
                 }
+
             }
         });
 
@@ -98,48 +126,47 @@ public class Gui{
          */
         model1 = new DefaultListModel();
         list1.setModel(model1);
+//        list1IDs = new ArrayList<String>();
+        trainOptSel = "";
         list1.addListSelectionListener(new ListSelectionListener() {
             @Override
             public void valueChanged(ListSelectionEvent e) {
-                list1IDs = new ArrayList<String>();
-                if (list1.isSelectionEmpty()) {
-                    System.out.println("empty");
-                } else {
-                    int[] selectedIx = list1.getSelectedIndices();
-                    for (int i = 0 ; i < selectedIx.length; i++) {
-                        if (list1.isSelectedIndex(selectedIx[i]) && !e.getValueIsAdjusting()) {
-                            list1IDs.add(i, String.valueOf(list1.getModel().getElementAt(selectedIx[i])));
-                        }
+                int[] selectedIx = list1.getSelectedIndices();
+                trainOptSel = "";
+                if(selectedIx.length == 1) {
+                    if (list1.isSelectedIndex(selectedIx[0]) && !e.getValueIsAdjusting()) {
+                        trainOptSel = String.valueOf(list1.getModel().getElementAt(selectedIx[0]));
                     }
                 }
+                else{
+                    trainOptSel = "";
+                }
+//                list1IDs = new ArrayList<String>();
+//                if (list1.isSelectionEmpty()) {
+//                    System.out.println("empty");
+//                } else {
+//                    int[] selectedIx = list1.getSelectedIndices();
+//                    for (int i = 0 ; i < selectedIx.length; i++) {
+//                        if (list1.isSelectedIndex(selectedIx[i]) && !e.getValueIsAdjusting()) {
+//                            list1IDs.add(i, String.valueOf(list1.getModel().getElementAt(selectedIx[i])));
+//                        }
+//                    }
+//                }
             }
         });
 
         button1.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                updateTextArea("AUI 2016 internet users analyser." + "\n" + "\n"
-                        + "Calculate blocks: Determine curves within mouse movements," + "\n"
-                        + "angle based metrics and SVM feature vectors (blocks) " + "\n" + "\n"
-                        + "Train SVM: train the Support Vector Machine with a" + "\n"
-                        + "chosen user's metric and all the other users signatures " + "\n" + "\n"
-                        + "Test SVM: test if a chosen sample belongs to the user");
+                updateTextArea(INFO, S_WHITE);
             }
+
         });
-
-
-
-
 
     }
 
     public void guiInit(){
-        updateTextArea("AUI 2016 internet users analyser." + "\n" + "\n"
-                        + "Calculate blocks: Determine curves within mouse movements," + "\n"
-                        + "angle based metrics and SVM feature vectors (blocks) " + "\n" + "\n"
-                        + "Train SVM: train the Support Vector Machine with a" + "\n"
-                        + "chosen user's metric and all the other users signatures " + "\n" + "\n"
-                        + "Test SVM: test if a chosen sample belongs to the user");
+        updateTextArea(INFO, S_WHITE);
         ca.dbConnect();
         loadSessionIDs();
         ca.dbDisconnect();
@@ -174,8 +201,9 @@ public class Gui{
         progressBar1.setForeground(color);
     }
 
-    public void updateTextArea(String text){
+    public void updateTextArea(String text, Color color){
         textArea1.setText("");
+        textArea1.setForeground(color);
         textArea1.append(text);
     }
 
