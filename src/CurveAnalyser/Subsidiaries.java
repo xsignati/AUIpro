@@ -12,15 +12,17 @@ public class Subsidiaries {
         private CurveAnalyser ca;
         private Gui gui;
         private CAmode caMode;
+        private SVM svm;
 
-        public GuiRun(CurveAnalyser ca, Gui gui, CAmode caMode) {
+        public GuiRun(CurveAnalyser ca, Gui gui, CAmode caMode, SVM svm) {
             this.ca = ca;
             this.gui = gui;
             this.caMode = caMode;
+            this.svm = svm;
         }
         @Override
         public void run() {
-            ca.startCurveAnalyser(gui, caMode);
+            ca.startCurveAnalyser(gui, caMode, svm);
         }
     }
 

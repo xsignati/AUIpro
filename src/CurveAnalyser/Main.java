@@ -9,9 +9,10 @@ import java.awt.*;
 public class Main {
     public static void main(String[] args){
         CurveAnalyser ca = new CurveAnalyser();
+        SVM svm = new SVM();
         //ca.dbConnect();
         JFrame frame = new JFrame("Gui");
-        Gui gui = new Gui(ca);
+        Gui gui = new Gui(ca, svm);
         frame.setContentPane(gui.getPanel1());
         frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         frame.setMinimumSize(new Dimension(584, 330));

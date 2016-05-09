@@ -18,6 +18,7 @@ import javax.swing.event.ListSelectionListener;
  */
 public class Gui{
     private CurveAnalyser ca;
+    private SVM svm;
     private JPanel panel1;
     private JButton calculateBlocksButton;
     private JButton trainSVMButton;
@@ -33,6 +34,7 @@ public class Gui{
     private JButton button1;
     private JButton button2;
     private JButton button3;
+    private JButton refreshButton;
     private Gui gui;
     private Subsidiaries.CAmode caMode;
 
@@ -58,9 +60,10 @@ public class Gui{
         return trainOptSel;
     }
 
-    public Gui(CurveAnalyser ca) {
+    public Gui(CurveAnalyser ca, SVM svm) {
         this.ca = ca;
         this.gui = this;
+        this.svm = svm;
 
         /**
          * Threads
@@ -70,7 +73,7 @@ public class Gui{
 
         Subsidiaries.CAmode [] tabMod = {caMode.CALCULATE, caMode.TRAIN, caMode.TEST};
         for (int i = 0 ; i < 3 ; i++) {
-            guiRunners[i] = new Subsidiaries().new GuiRun(ca, gui, tabMod[i]);
+            guiRunners[i] = new Subsidiaries().new GuiRun(ca, gui, tabMod[i], svm);
             guiThreads[i] = new Thread(guiRunners[i]);
         }
 
@@ -163,6 +166,14 @@ public class Gui{
 
         });
 
+        refreshButton.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                ca.dbConnect();
+                loadSessionIDs();
+                ca.dbDisconnect();
+            }
+        });
     }
 
     public void guiInit(){
@@ -178,6 +189,7 @@ public class Gui{
             String SQL_B_SID = "SELECT DISTINCT sessionID FROM `blocks`";
             Statement stmtBsid = ca.getConn().createStatement();
             ResultSet rsBsid = stmtBsid.executeQuery(SQL_B_SID);
+            model1.clear();
 
             while (rsBsid.next()) {
                 model1.addElement(rsBsid.getString("SessionID"));

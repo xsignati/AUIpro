@@ -44,13 +44,13 @@ public class CurveAnalyser {
         catch (SQLException e){}
     }
 
-    public void startCurveAnalyser(Gui gui, Subsidiaries.CAmode mode){
+    public void startCurveAnalyser(Gui gui, Subsidiaries.CAmode mode, SVM svm){
         switch (mode) {
             case CALCULATE :
                 calculateAllFeatures(gui);
                 break;
             case TRAIN :
-                trainSVM(gui);
+                trainSVM(gui, svm);
                 break;
             case TEST :
                 testSVM();
@@ -83,10 +83,10 @@ public class CurveAnalyser {
         }
         catch(SQLException e){System.out.println("Cannot achieve db");}
     }
-    public void trainSVM(Gui gui){
+    public void trainSVM(Gui gui, SVM svm){
         dbConnect();
         tsvm = new TrainSVM(conn);
-        int tsvmRes = tsvm.startTrainSVM(gui);
+        int tsvmRes = tsvm.startTrainSVM(gui, svm);
         if(tsvmRes == 0){
             gui.updateTextArea(TRAIN_OK, Gui.S_GREEN);
         }
