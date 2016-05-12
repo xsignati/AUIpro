@@ -4,6 +4,7 @@ import javax.swing.*;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.io.File;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
@@ -33,8 +34,9 @@ public class Gui{
     private JList list2;
     private JButton button1;
     private JButton button2;
-    private JButton button3;
     private JButton refreshButton;
+    private JButton manualCMLoaderButton;
+    private JButton clearDatabaseButton;
     private Gui gui;
     private Subsidiaries.CAmode caMode;
 
@@ -172,6 +174,39 @@ public class Gui{
                 ca.dbConnect();
                 loadSessionIDs();
                 ca.dbDisconnect();
+            }
+        });
+        manualCMLoaderButton.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                File workingDirectory = new File(System.getProperty("user.dir"));
+                JFileChooser chooser = new JFileChooser();
+                chooser.setCurrentDirectory(workingDirectory);
+                int returnVal = chooser.showOpenDialog(panel1);
+                if (returnVal == JFileChooser.APPROVE_OPTION) {
+                    String name = chooser.getSelectedFile().getName();
+                    ca.manualLoad(name);
+                }
+            }
+        });
+        clearDatabaseButton.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                int reply = JOptionPane.showConfirmDialog(null, "Are you sure you want to delete all database data?", "Database eradication", JOptionPane.YES_NO_OPTION);
+                if (reply == JOptionPane.YES_OPTION) {
+                    int reply2 = JOptionPane.showConfirmDialog(null, "Really?", "Database eradication", JOptionPane.YES_NO_OPTION);
+                    if (reply2 == JOptionPane.YES_OPTION) {
+                        ca.dbConnect();
+                        if(ca.deleteDb()){
+                            JOptionPane.showMessageDialog(null, "All data deleted!");
+                        }
+                        else{
+                            JOptionPane.showMessageDialog(null, "Error deleting database!");
+                        }
+
+
+                    }
+                }
             }
         });
     }

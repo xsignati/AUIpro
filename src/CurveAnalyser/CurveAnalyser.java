@@ -14,6 +14,7 @@ public class CurveAnalyser {
     private CalculateMetrics cm;
     private CalculateBlocks cp;
     private TrainSVM tsvm;
+    private ManualLoader ml;
 
     public static final String CALC_OK = "All blocks (feature vectors) calculated successfully";
     public static final String TRAIN_OK = "Training completed successfully";
@@ -97,6 +98,33 @@ public class CurveAnalyser {
             gui.updateTextArea(TRAIN_E_2, Gui.S_RED);
         }
         dbDisconnect();
+    }
+
+    public boolean deleteDb(){
+        try {
+            String sqlKill = "delete FROM `mousetracks`";
+            Statement stKill = conn.createStatement();
+            stKill.executeQuery(sqlKill);
+            sqlKill = "delete FROM `curveparameters`";
+            stKill = conn.createStatement();
+            stKill.executeQuery(sqlKill);
+            sqlKill = "delete FROM `general`";
+            stKill = conn.createStatement();
+            stKill.executeQuery(sqlKill);
+            sqlKill = "delete FROM `mousecurves`";
+            stKill = conn.createStatement();
+            stKill.executeQuery(sqlKill);
+            sqlKill = "delete FROM `blocks`";
+            stKill = conn.createStatement();
+            stKill.executeQuery(sqlKill);
+
+            return true;
+        }
+        catch(SQLException e){return false;}
+
+    }
+    public void manualLoad(String name){
+        ml.startManualLoader(name);
     }
     public void testSVM(){}
 

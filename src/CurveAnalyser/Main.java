@@ -15,7 +15,7 @@ public class Main {
         Gui gui = new Gui(ca, svm);
         frame.setContentPane(gui.getPanel1());
         frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-        frame.setMinimumSize(new Dimension(584, 330));
+        frame.setMinimumSize(new Dimension(660, 530));
         frame.setPreferredSize(new Dimension(854, 480));
         frame.setTitle("AUI");
         frame.pack();

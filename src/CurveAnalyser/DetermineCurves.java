@@ -66,7 +66,7 @@ public class DetermineCurves {
                     stmtCcVals.close();
 
                     /**
-                     * Loop of functions that check if mouse movements contain curves and if so send them to db
+                     * Loop of functions that checks if mouse movements contain curves. If so, it sends them to the db
                      */
                     while (rsCcVals.next()) {
                             checkCursorMovements(rsCcVals, curveList);
