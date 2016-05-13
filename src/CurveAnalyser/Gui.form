@@ -159,7 +159,7 @@
           <background color="-9999763"/>
           <font size="18"/>
           <foreground color="-2235157"/>
-          <text value="Load cursor movements"/>
+          <text value="Load Cursor Movements"/>
         </properties>
       </component>
       <component id="a625" class="javax.swing.JButton" binding="clearDatabaseButton" default-binding="true">

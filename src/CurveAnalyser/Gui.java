@@ -86,10 +86,10 @@ public class Gui{
             @Override
             public void actionPerformed(ActionEvent e) {
                 if(processWorking()){
-                    updateTextArea(ANOTHER_PR, S_RED);
+                    updateTextArea(ANOTHER_PR, S_RED, false);
                 }
                 else{
-                    updateTextArea(CALC, S_GREEN);
+                    updateTextArea(CALC, S_GREEN, false);
                     guiThreads[0] = new Thread(guiRunners[0]);
                     guiThreads[0].start();
 
@@ -110,14 +110,14 @@ public class Gui{
             public void actionPerformed(ActionEvent e) {
 
                 if(processWorking()){
-                    updateTextArea(ANOTHER_PR, S_RED);
+                    updateTextArea(ANOTHER_PR, S_RED, false);
                 }
                 else if(trainOptSel.isEmpty()){
-                    updateTextArea(SELECT_SID, S_RED);
+                    updateTextArea(SELECT_SID, S_RED, false);
 
                 }
                 else{
-                    updateTextArea(TRAIN_STR, S_GREEN);
+                    updateTextArea(TRAIN_STR, S_GREEN, false);
                     guiThreads[1] = new Thread(guiRunners[1]);
                     guiThreads[1].start();
 
@@ -163,7 +163,7 @@ public class Gui{
         button1.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                updateTextArea(INFO, S_WHITE);
+                updateTextArea(INFO, S_WHITE, false);
             }
 
         });
@@ -185,7 +185,7 @@ public class Gui{
                 int returnVal = chooser.showOpenDialog(panel1);
                 if (returnVal == JFileChooser.APPROVE_OPTION) {
                     String name = chooser.getSelectedFile().getName();
-                    ca.manualLoad(name);
+                    ca.manualLoad(name, gui);
                 }
             }
         });
@@ -212,7 +212,7 @@ public class Gui{
     }
 
     public void guiInit(){
-        updateTextArea(INFO, S_WHITE);
+        updateTextArea(INFO, S_WHITE, false);
         ca.dbConnect();
         loadSessionIDs();
         ca.dbDisconnect();
@@ -248,8 +248,9 @@ public class Gui{
         progressBar1.setForeground(color);
     }
 
-    public void updateTextArea(String text, Color color){
-        textArea1.setText("");
+    public void updateTextArea(String text, Color color, boolean cont){
+        if(!cont)
+            textArea1.setText("");
         textArea1.setForeground(color);
         textArea1.append(text);
     }

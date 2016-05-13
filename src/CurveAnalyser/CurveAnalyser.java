@@ -20,6 +20,8 @@ public class CurveAnalyser {
     public static final String TRAIN_OK = "Training completed successfully";
     public static final String TRAIN_E_1 = "Not enough number of negative data samples (related with a selected sessionID";
     public static final String TRAIN_E_2 = "Not enough number of positive data samples (environment testing data)";
+    public static final String MANUAL_OK= "All data loaded successfully";
+    public static final String MANUAL_ERR = "Error loading data";
 
     public CurveAnalyser(){
         dbName = "databasec1";
@@ -77,7 +79,7 @@ public class CurveAnalyser {
             cp = new CalculateBlocks(conn);
             cp.startCalculateBlocks();
             gui.updateBar(100, Gui.S_GREEN);
-            gui.updateTextArea(CALC_OK, Gui.S_GREEN);
+            gui.updateTextArea(CALC_OK, Gui.S_GREEN, false);
             conn.commit(); /**< execute all queries */
             conn.setAutoCommit(true); /**< a safe option for table with no timestamp column */
             dbDisconnect();
@@ -89,13 +91,13 @@ public class CurveAnalyser {
         tsvm = new TrainSVM(conn);
         int tsvmRes = tsvm.startTrainSVM(gui, svm);
         if(tsvmRes == 0){
-            gui.updateTextArea(TRAIN_OK, Gui.S_GREEN);
+            gui.updateTextArea(TRAIN_OK, Gui.S_GREEN, false);
         }
         else if(tsvmRes == 1){
-            gui.updateTextArea(TRAIN_E_1, Gui.S_RED);
+            gui.updateTextArea(TRAIN_E_1, Gui.S_RED, false);
         }
         else if(tsvmRes == 2){
-            gui.updateTextArea(TRAIN_E_2, Gui.S_RED);
+            gui.updateTextArea(TRAIN_E_2, Gui.S_RED, false);
         }
         dbDisconnect();
     }
@@ -123,8 +125,27 @@ public class CurveAnalyser {
         catch(SQLException e){return false;}
 
     }
-    public void manualLoad(String name){
-        ml.startManualLoader(name);
+    public void manualLoad(String name, Gui gui){
+        gui.updateBar(50, Gui.S_RED);
+        dbConnect();
+        try {
+            conn.setAutoCommit(false);
+        }
+        catch (SQLException e){}
+        ml = new ManualLoader(conn);
+        if(ml.startManualLoader(name)) {
+            gui.updateBar(100, Gui.S_GREEN);
+            gui.updateTextArea(MANUAL_OK, Gui.S_GREEN, false);
+        }
+        else{
+            gui.updateTextArea(MANUAL_ERR, Gui.S_RED, false);
+        }
+        try {
+            conn.setAutoCommit(true);
+        }
+        catch (SQLException e){}
+        dbDisconnect();
+
     }
     public void testSVM(){}
 
