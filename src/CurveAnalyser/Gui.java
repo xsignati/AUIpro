@@ -25,9 +25,10 @@ public class Gui{
     private JButton trainSVMButton;
     private JList list1;
     private DefaultListModel model1;
-    private ArrayList<String> list1IDs;
     private String trainOptSel;
     private DefaultListModel model2;
+    private String testOptSel;
+    private String modelName;
     private JButton testSVMButton;
     private JProgressBar progressBar1;
     private JTextArea textArea1;
@@ -37,6 +38,9 @@ public class Gui{
     private JButton refreshButton;
     private JButton manualCMLoaderButton;
     private JButton clearDatabaseButton;
+    private JButton loadModelButton;
+    private JLabel modelTitle;
+    private JLabel title;
     private Gui gui;
     private Subsidiaries.CAmode caMode;
 
@@ -94,14 +98,6 @@ public class Gui{
                     guiThreads[0].start();
 
                 }
-//                Thread first = new Thread(new Runnable() {
-//                    @Override
-//                    public void run() {
-//                        ca.startCurveAnalyser(gui, caMode.CALCULATE);
-//                    }
-//                });
-//                first.start();
-
             }
         });
 
@@ -131,7 +127,6 @@ public class Gui{
          */
         model1 = new DefaultListModel();
         list1.setModel(model1);
-//        list1IDs = new ArrayList<String>();
         trainOptSel = "";
         list1.addListSelectionListener(new ListSelectionListener() {
             @Override
@@ -146,19 +141,34 @@ public class Gui{
                 else{
                     trainOptSel = "";
                 }
-//                list1IDs = new ArrayList<String>();
-//                if (list1.isSelectionEmpty()) {
-//                    System.out.println("empty");
-//                } else {
-//                    int[] selectedIx = list1.getSelectedIndices();
-//                    for (int i = 0 ; i < selectedIx.length; i++) {
-//                        if (list1.isSelectedIndex(selectedIx[i]) && !e.getValueIsAdjusting()) {
-//                            list1IDs.add(i, String.valueOf(list1.getModel().getElementAt(selectedIx[i])));
-//                        }
-//                    }
-//                }
+
             }
         });
+
+        model2 = new DefaultListModel();
+        list2.setModel(model2);
+        testOptSel = "";
+        list2.addListSelectionListener(new ListSelectionListener() {
+            @Override
+            public void valueChanged(ListSelectionEvent e) {
+                int[] selectedIx = list2.getSelectedIndices();
+                testOptSel = "";
+                if(selectedIx.length == 1) {
+                    if (list2.isSelectedIndex(selectedIx[0]) && !e.getValueIsAdjusting()) {
+                        testOptSel = String.valueOf(list2.getModel().getElementAt(selectedIx[0]));
+                    }
+                }
+                else{
+                    testOptSel = "";
+                }
+
+            }
+        });
+
+        /**
+         * initialize SVM model name
+         */
+        modelName = "";
 
         button1.addActionListener(new ActionListener() {
             @Override
@@ -209,6 +219,20 @@ public class Gui{
                 }
             }
         });
+        loadModelButton.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                File workingDirectory = new File(System.getProperty("user.dir"));
+                JFileChooser chooser = new JFileChooser();
+                chooser.setCurrentDirectory(workingDirectory);
+                int returnVal = chooser.showOpenDialog(panel1);
+                if (returnVal == JFileChooser.APPROVE_OPTION) {
+                    modelName = chooser.getSelectedFile().getName();
+                    modelTitle.setText("SVM model: " + modelName);
+                    modelTitle.setForeground(S_GREEN);
+                }
+            }
+        });
     }
 
     public void guiInit(){
@@ -225,9 +249,11 @@ public class Gui{
             Statement stmtBsid = ca.getConn().createStatement();
             ResultSet rsBsid = stmtBsid.executeQuery(SQL_B_SID);
             model1.clear();
+            model2.clear();
 
             while (rsBsid.next()) {
                 model1.addElement(rsBsid.getString("SessionID"));
+                model2.addElement(rsBsid.getString("SessionID"));
             }
 
         }
@@ -250,7 +276,7 @@ public class Gui{
 
     public void updateTextArea(String text, Color color, boolean cont){
         if(!cont)
-            textArea1.setText("");
+        textArea1.setText("");
         textArea1.setForeground(color);
         textArea1.append(text);
     }
@@ -259,9 +285,6 @@ public class Gui{
         return panel1;
     }
 
-    public ArrayList<String> getList1IDs() {
-        return list1IDs;
-    }
 
 
 

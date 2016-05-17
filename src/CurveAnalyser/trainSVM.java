@@ -14,7 +14,7 @@ import java.util.*;
  * Created by Flexscan2243 on 30.04.2016.
  */
 public class TrainSVM {
-    private static final int HALF_TRAINING_DATA_SIZE = 5;
+    private static final int HALF_TRAINING_DATA_SIZE = 29;
     private Connection conn;
     private SVM svm;
     private LinkedList<String> negBlockList;
@@ -100,11 +100,12 @@ public class TrainSVM {
             /**
              * Get the best hyperparameters C and Gamma
              */
-            String[] argv = {"-v","2", inputName};
+            String[] argv = {"-v","5", inputName};
             try {
                 svm.run(argv);
             }
             catch (IOException e){System.out.println("SVM START ERROR");}
+            System.out.println("training ended...");
 
 
         }
@@ -321,7 +322,6 @@ public class TrainSVM {
                          * Save the row to the list
                          */
                         blockList.add(blockRow);
-
 
                         /**
                          * prepare input

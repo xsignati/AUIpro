@@ -10,16 +10,20 @@ import java.util.LinkedList;
  */
 public class CalculateMetrics {
     private static final int LIST_MIDDLE = 1;
+    public int aj = 0;
     /**
      * Database variables
      */
     private Connection conn;
 
+    private LinkedList<CursorPoint> curveList;
+
     public CalculateMetrics(Connection conn){
         this.conn = conn;
+        curveList = new LinkedList<CursorPoint>();
     }
 
-    public void startCalculateMetrics(){
+    public void startCalculateMetrics2(){
         try {
             //SQL
             String SQL_CC_SID = "SELECT DISTINCT sessionID FROM `mousecurves`";
@@ -45,16 +49,18 @@ public class CalculateMetrics {
                     ResultSet rsCccid = stmtCccid.executeQuery(SQL_CC_CID);
 
                     while (rsCccid.next()) {
+                        System.out.println(aj);
+                        aj++;
                         /**
                         * Prepare a temporary container for angle based metrics
                          */
                         String currCurveID = rsCccid.getString("curveID");
-                        LinkedList<CursorPoint> curveList = new LinkedList<CursorPoint>(); /**< list for potentional curves */
+                        //LinkedList<CursorPoint> curveList = new LinkedList<CursorPoint>(); /**< list for potential curves */
+                        curveList.clear();
                         String SQL_CC_ALL = "SELECT x, y, sessionID, curveID, action, time FROM `mousecurves` WHERE curveID = '"+currCurveID+"' ORDER BY `mousecurves`.`time` ASC";
                         Statement stmtCcall= conn.createStatement();
                         ResultSet rsCccall = stmtCcall.executeQuery(SQL_CC_ALL);
                         while (rsCccall.next()) {
-
                             calculateFeatures(curveList, rsCccall);
                         }
                     }
@@ -63,6 +69,59 @@ public class CalculateMetrics {
         }
         catch(Exception e){}
     }
+//test
+    public void startCalculateMetrics(){
+        try {
+            System.out.println("start cm");
+            //SQL
+            String SQL_CC_SID = "SELECT DISTINCT sessionID FROM `mousecurves`";
+            String currSessionID;
+            Statement stmtCcsid = conn.createStatement();
+            ResultSet rsCcsid = stmtCcsid.executeQuery(SQL_CC_SID);
+            while (rsCcsid.next()) {
+                currSessionID = rsCcsid.getString("sessionID");
+                System.out.println("sessionID");
+
+                /**
+                 *check if SessionID exists in CurveParameters, if it does get another SessionID
+                 */
+                String SQL_CP_SID = "SELECT sessionID FROM `curveparameters` WHERE sessionID = '"+currSessionID+"' LIMIT 1";
+                Statement stmtCpsid = conn.createStatement();
+                ResultSet rsCpsid = stmtCpsid.executeQuery(SQL_CP_SID);
+
+                if (!rsCpsid.isBeforeFirst()) {
+                    System.out.println("sessionid d not exists");
+                    /**
+                     * Get all curves that belong to sessionID
+                     */
+                    String SQL_CC_ALL = "SELECT x, y, sessionID, curveID, action, time FROM `mousecurves` WHERE sessionID = '"+currSessionID+"' ORDER BY `mousecurves`.`time` ASC";
+                    Statement stmtCcall= conn.createStatement();
+                    ResultSet rsCccall = stmtCcall.executeQuery(SQL_CC_ALL);
+
+                    String prevCurveID = "";
+                    String currCurveID;
+                    while (rsCccall.next()) {
+                        System.out.println(aj);
+                        aj++;
+                        currCurveID = rsCccall.getString("curveID");
+
+                        /**
+                         * Prepare a temporary container for angle based metrics
+                         */
+                        if(!currCurveID.equals(prevCurveID))
+                            curveList.clear();
+
+                        calculateFeatures(curveList, rsCccall);
+                        prevCurveID = currCurveID;
+
+                    }
+                }
+            }
+        }
+        catch(Exception e){}
+    }
+    //test
+
     public void calculateFeatures(LinkedList<CursorPoint> curveList, ResultSet rsCccall){
         try {
             if (curveList.size() == 2) {
@@ -80,7 +139,7 @@ public class CalculateMetrics {
                  */
                 String sqlCpAll = "INSERT INTO curveParameters (sessionID, curveID, angleAB, angleABC, ratioBAC, firstPointTime) VALUES ( '"+rsCccall.getString("sessionID")+"', '"+rsCccall.getString("curveID")+"', '"+abAngle+"', '"+abcAngle+"', '"+bacRatio+"', '"+rsCccall.getFloat("time")+"')";
                 Statement stmtCpAll = conn.createStatement();
-                ResultSet rsCpAll = stmtCpAll.executeQuery(sqlCpAll);
+                stmtCpAll.executeQuery(sqlCpAll);
 
 
                 /**
@@ -150,13 +209,16 @@ public class CalculateMetrics {
         /**
          * count vAC module
          */
-        double vectorACmod = Math.sqrt(Math.pow(vectorAC.getX(),2) + Math.pow(vectorAC.getY(),2));
+        //double vectorACmod = Math.sqrt(Math.pow(vectorAC.getX(),2) + Math.pow(vectorAC.getY(),2));
+        double vectorACmod = vectorAC.getX() * vectorAC.getX() + vectorAC.getY() * vectorAC.getY();
         if(vectorACmod == 0){
             return (Math.sqrt(Math.pow(vectorAB.getX(),2) + Math.pow(vectorAB.getY(),2)));
         }
         else{
-            double bACdist = Math.abs(cross)/vectorACmod;
-            return bACdist/vectorACmod;
+            //double bACdist = Math.abs(cross)/vectorACmod;
+            //double bACdist = (cross * cross)/vectorACmod;
+            //return bACdist/vectorACmod;
+            return Math.abs(cross)/vectorACmod;
         }
     }
 }

@@ -69,7 +69,7 @@ public class CalculateBlocks {
         bacSum = 0;
     }
 
-    public void startCalculateBlocks() {
+    public void startCalculateBlocks2() {
         try {
             /**
              * Get a list of users' sessionIDs
@@ -96,11 +96,12 @@ public class CalculateBlocks {
                     String SQL_CP_CID = "SELECT DISTINCT curveID FROM `curveparameters` WHERE sessionID = '"+currSessionID+"'";
                     Statement stmtCpcid = conn.createStatement();
                     ResultSet rsCpcid = stmtCpcid.executeQuery(SQL_CP_CID);
-
+                    resetBlockData();
                     while (rsCpcid.next()) {
                         /**
                          *
                          */
+                    System.out.println("ax");
                         histograms(rsCpcid);
                         if (blockIterator == BLOCK_SIZE) {
                             //normHist();
@@ -128,7 +129,80 @@ public class CalculateBlocks {
             }
         }
         catch (SQLException e) {System.out.println("Error1");}
+
     }
+
+    //test
+    public void startCalculateBlocks() {
+        try {
+            /**
+             * Get a list of users' sessionIDs
+             */
+            String currSessionID;
+            int currBlockID;
+            String SQL_CP_SID = "SELECT DISTINCT sessionID FROM `curveparameters`";
+            Statement stmtCpsid = conn.createStatement();
+            ResultSet rsCpsid = stmtCpsid.executeQuery(SQL_CP_SID);
+            while (rsCpsid.next()) {
+                currSessionID = rsCpsid.getString("sessionID");
+                currBlockID = 0;
+
+                /**
+                 *check if SessionID exists in CurveParameters, if it does get another SessionID
+                 */
+                String SQL_B_SID = "SELECT sessionID FROM `blocks` WHERE sessionID = '"+currSessionID+"' LIMIT 1";
+                Statement stmtBsid = conn.createStatement();
+                ResultSet rsBsid = stmtBsid.executeQuery(SQL_B_SID);
+                if (!rsBsid.isBeforeFirst()) {
+                    /**
+                     * Get a list of curves
+                     */
+
+                    String SQL_CP_ALL = "SELECT angleAB, angleABC, ratioBAC, firstPointTime, curveID FROM `curveparameters` WHERE sessionID = '"+currSessionID+"' ORDER BY `curveparameters`.`firstPointTime` ASC";
+                    Statement stmtCpall = conn.createStatement();
+                    ResultSet rsCpcall = stmtCpall.executeQuery(SQL_CP_ALL);
+
+                    String currCurveID;
+                    String prevCurveID = "";
+                    resetBlockData();
+                    while (rsCpcall.next()) {
+                        /**
+                         *
+                         */
+                        currCurveID = rsCpcall.getString("curveID");
+                        if(!currCurveID.equals(prevCurveID)) {
+                            if (blockIterator == BLOCK_SIZE + 1) {
+
+                                hist2cdf();
+                                /**
+                                 * save a block in database
+                                 */
+                                createSVMsample();
+                                sendBlock(currSessionID, currBlockID);
+                                /**
+                                 * clear all blocks' data
+                                 */
+                                resetBlockData();
+
+                                /**
+                                 * iterate the current block's ID
+                                 */
+                                currBlockID++;
+                            }
+                            blockIterator++;
+                        }
+                        histograms(rsCpcall);
+                        prevCurveID = currCurveID;
+                    }
+                }
+            }
+        }
+        catch (SQLException e) {System.out.println("Error111");}
+
+    }
+    //test
+
+
     public void sendBlock(String currSessionID, int currBlockID){
         try {
             String SQL_B_ALL;
@@ -178,7 +252,28 @@ public class CalculateBlocks {
         blockIterator = 1;
         disposedBinsSum = 0;
     }
-    public void histograms(ResultSet rsCpcid){
+    public void histograms(ResultSet rsCpcall){
+
+        try{
+            int ABbin = (int) ((rsCpcall.getInt("angleAB") - AB_MIN) / AB_BIN_SIZE);
+            int ABCbin = (int) ((rsCpcall.getInt("angleABC") - ABC_MIN) / ABC_BIN_SIZE);
+            int BACbin = (int) ((rsCpcall.getDouble("ratioBAC") - BAC_MIN) / BAC_BIN_SIZE);
+
+            if(match2anyBin(ABbin, AB_BIN_NUM)
+                    && match2anyBin(ABCbin, ABC_BIN_NUM)
+                    && match2anyBin(BACbin, BAC_BIN_NUM)){
+                abInput[ABbin]++;
+                abcInput[ABCbin]++;
+                bacInput[BACbin]++;
+            }
+            else{
+                disposedBinsSum+=3;
+            }
+        }
+        catch(Exception e){System.out.println("Error");}
+    }
+
+    public void histograms2(ResultSet rsCpcid){
 
         try{
             String currCurveID = rsCpcid.getString("curveID");
@@ -206,6 +301,7 @@ public class CalculateBlocks {
         catch(Exception e){System.out.println("Error");}
 
     }
+
     public void normHist(){
         /**
          * Sum data frequencies

@@ -20,21 +20,21 @@ public class ManualLoader {
 
     }
 
-    public void startManualLoader(String name){
+    public boolean startManualLoader(String name){
         try {
             String manSessionID = "None";
             if (name != null && name.length() > 0) {
                 manSessionID = name.substring(0, name.length()-4);
             }
 
-            String sqlCsid = "SELECT * FROM `mousetracks` WHERE sessionID LIKE '%" +manSessionID+ "%' LIMIT 1";
+            String sqlCsid = "SELECT sessionID FROM `mousetracks` WHERE sessionID = '" +manSessionID+ "' LIMIT 1";
             Statement stmtCsid = conn.createStatement();
             ResultSet rsCsid= stmtCsid.executeQuery(sqlCsid);
 
             if(!rsCsid.isBeforeFirst()){
-                String sqlGsid = "INSERT INTO `general` VALUES ('"+manSessionID+"')";
+                String sqlGsid = "INSERT INTO `general` (sessionID) VALUES ('"+manSessionID+"')";
                 Statement stmtGsid = conn.createStatement();
-                stmtCsid.executeQuery(sqlGsid);
+                stmtGsid.executeQuery(sqlGsid);
 
                 try {
                     BufferedReader in = new BufferedReader(new FileReader(name));
@@ -44,7 +44,7 @@ public class ManualLoader {
                     String line;
                     while ((line = in.readLine()) != null) {
                         if(skipLineIt > SKIP_LINES_NUM) {
-                            String[] parts = line.split(" ");
+                            String[] parts = line.split("\t");
 
                             if(parts[1].equals("Pressed Left"))
                                 parts[1] = "Clicked";
@@ -67,12 +67,14 @@ public class ManualLoader {
                         }
                     }
                     in.close();
+
                 }
-                catch (IOException e){}
+                catch (IOException e){System.out.println("IOexception"); return false;}
 
             }
+            return true;
         }
-        catch (SQLException e){}
+        catch (SQLException e){ System.out.println("SQLexception"); return false;}
 
 
     }

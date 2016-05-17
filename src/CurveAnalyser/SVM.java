@@ -30,6 +30,7 @@ public class SVM {
     private double[] arrayGamma;
     private double bestC;
     private double bestGamma;
+    private double bestAcc;
 
     private static svm_print_interface svm_print_null = new svm_print_interface()
     {
@@ -138,11 +139,14 @@ public class SVM {
                 }
             }
         }
-
         bestC = Math.pow(2,arrayC[cMaxIndex]);
 
         if (this.arrayGamma != null) {
             bestGamma = Math.pow(2,arrayGamma[gammaMaxIndex]);
+            bestAcc = 100.0*arrayAcc[cMaxIndex][gammaMaxIndex]/prob.l;
+        }
+        else{
+            bestAcc =  100.0*arrayAcc[cMaxIndex][0]/prob.l;
         }
     }
 
@@ -208,14 +212,13 @@ public class SVM {
             gridSearch(cRange,gammaRange);
             param.C = bestC;
             param.gamma = bestGamma;
-            System.out.println("KONIEC" + bestC + " END" + bestGamma);
-            do_cross_validation();
+            System.out.println("ENDED, BEST C: " + bestC + " BEST GAMMA: " + bestGamma + "BEST ACCURANCY: " + bestAcc );
         }
-        else
-        {
-            model = svm.svm_train(prob,param);
-            svm.svm_save_model(model_file_name,model);
-        }
+
+        model = svm.svm_train(prob,param);
+        svm.svm_save_model(model_file_name,model);
+        System.out.println("model saved");
+
     }
 
     private static double atof(String s)
