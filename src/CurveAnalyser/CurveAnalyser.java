@@ -14,6 +14,7 @@ public class CurveAnalyser {
     private CalculateMetrics cm;
     private CalculateBlocks cp;
     private TrainSVM tsvm;
+    private TestSVM ttsvm;
     private ManualLoader ml;
 
     public static final String CALC_OK = "All blocks (feature vectors) calculated successfully";
@@ -22,6 +23,8 @@ public class CurveAnalyser {
     public static final String TRAIN_E_2 = "Not enough number of positive data samples (environment testing data)";
     public static final String MANUAL_OK= "All data loaded successfully";
     public static final String MANUAL_ERR = "Error loading data";
+    public static final String TEST_OK = "Testing completed successfully";
+    public static final String TEST_E_1 = "Data is too small. Create at least one block";
 
     public CurveAnalyser(){
         dbName = "databasec1";
@@ -47,16 +50,16 @@ public class CurveAnalyser {
         catch (SQLException e){}
     }
 
-    public void startCurveAnalyser(Gui gui, Subsidiaries.CAmode mode, SVM svm){
+    public void startCurveAnalyser(Gui gui, Subsidiaries.CAmode mode, SVM svm, String selSessionID, String selModelName){
         switch (mode) {
             case CALCULATE :
                 calculateAllFeatures(gui);
                 break;
             case TRAIN :
-                trainSVM(gui, svm);
+                trainSVM(gui, svm, selSessionID);
                 break;
             case TEST :
-                testSVM();
+                testSVM(gui, svm, selSessionID, selModelName);
                 break;
             default :
                 break;
@@ -86,10 +89,10 @@ public class CurveAnalyser {
         }
         catch(SQLException e){System.out.println("Cannot achieve db");}
     }
-    public void trainSVM(Gui gui, SVM svm){
+    public void trainSVM(Gui gui, SVM svm, String selSessionID){
         dbConnect();
         tsvm = new TrainSVM(conn);
-        int tsvmRes = tsvm.startTrainSVM(gui, svm);
+        int tsvmRes = tsvm.startTrainSVM(gui, svm, selSessionID);
         if(tsvmRes == 0){
             gui.updateTextArea(TRAIN_OK, Gui.S_GREEN, false);
         }
@@ -97,6 +100,22 @@ public class CurveAnalyser {
             gui.updateTextArea(TRAIN_E_1, Gui.S_RED, false);
         }
         else if(tsvmRes == 2){
+            gui.updateTextArea(TRAIN_E_2, Gui.S_RED, false);
+        }
+        dbDisconnect();
+    }
+
+    public void testSVM(Gui gui, SVM svm, String selSessionID, String selModelName){
+        dbConnect();
+        ttsvm = new TestSVM(conn);
+        int ttsvmRes = ttsvm.startTestSVM(gui, svm, selSessionID, selModelName);
+        if(ttsvmRes == 0){
+            gui.updateTextArea(TEST_OK, Gui.S_GREEN, false);
+        }
+        else if(ttsvmRes == 1){
+            gui.updateTextArea(TRAIN_E_1, Gui.S_RED, false);
+        }
+        else if(ttsvmRes == 2){
             gui.updateTextArea(TRAIN_E_2, Gui.S_RED, false);
         }
         dbDisconnect();

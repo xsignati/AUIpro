@@ -13,6 +13,7 @@ import javax.swing.JList;
 import javax.swing.DefaultListModel;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
+import javax.swing.text.DefaultCaret;
 
 /**
  * Created by Flexscan2243 on 28.04.2016.
@@ -34,13 +35,16 @@ public class Gui{
     private JTextArea textArea1;
     private JList list2;
     private JButton button1;
-    private JButton button2;
     private JButton refreshButton;
     private JButton manualCMLoaderButton;
     private JButton clearDatabaseButton;
     private JButton loadModelButton;
-    private JLabel modelTitle;
+    private JTextArea modelTitle;
     private JLabel title;
+    private JScrollPane modelPane;
+    private JScrollPane testPane;
+    private JScrollPane trainPane;
+    private JScrollPane logPane;
     private Gui gui;
     private Subsidiaries.CAmode caMode;
 
@@ -60,6 +64,9 @@ public class Gui{
     public static final String SELECT_SID = "Select one SessionID!";
     public static final String ANOTHER_PR = "Another process is working. Wait until it finishes!";
     public static final String CALC = "Calculating...";
+    public static final String TEST_STR = "Testing started...";
+    public static final String SEL_SID_AND_NAME = "Select SessionID and load SVM model!";
+
 
 
     public String getTrainOptSel() {
@@ -79,12 +86,12 @@ public class Gui{
 
         Subsidiaries.CAmode [] tabMod = {caMode.CALCULATE, caMode.TRAIN, caMode.TEST};
         for (int i = 0 ; i < 3 ; i++) {
-            guiRunners[i] = new Subsidiaries().new GuiRun(ca, gui, tabMod[i], svm);
+            guiRunners[i] = new Subsidiaries().new GuiRun(ca, gui, tabMod[i], svm, "", "");
             guiThreads[i] = new Thread(guiRunners[i]);
         }
 
         /**
-         * Buttons
+         * SVM data manipulation buttons
          */
         calculateBlocksButton.addActionListener(new ActionListener() {
             @Override
@@ -114,6 +121,7 @@ public class Gui{
                 }
                 else{
                     updateTextArea(TRAIN_STR, S_GREEN, false);
+                    guiRunners[1] =  new Subsidiaries().new GuiRun(ca, gui, tabMod[1], svm, trainOptSel, "");
                     guiThreads[1] = new Thread(guiRunners[1]);
                     guiThreads[1].start();
 
@@ -122,8 +130,28 @@ public class Gui{
             }
         });
 
+        testSVMButton.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                if(processWorking()){
+                    updateTextArea(ANOTHER_PR, S_RED, false);
+                }
+                else if(testOptSel.isEmpty() || modelName.isEmpty()){
+                    updateTextArea(SEL_SID_AND_NAME, S_RED, false);
+
+                }
+                else{
+                    updateTextArea(TEST_STR, S_GREEN, false);
+                    guiRunners[2] =  new Subsidiaries().new GuiRun(ca, gui, tabMod[2], svm, testOptSel, modelName);
+                    guiThreads[2] = new Thread(guiRunners[2]);
+                    guiThreads[2].start();
+
+                }
+            }
+        });
+
         /**
-         * Lists
+         * Right menu buttons. SVM buttons lists for selected options
          */
         model1 = new DefaultListModel();
         list1.setModel(model1);
@@ -165,8 +193,12 @@ public class Gui{
             }
         });
 
+        modelTitle.setHighlighter(null);
+        DefaultCaret caret = (DefaultCaret)modelTitle.getCaret();
+        caret.setUpdatePolicy(DefaultCaret.NEVER_UPDATE);
+
         /**
-         * initialize SVM model name
+         *  left menu buttons. Calculate features, log screen, manual loader, refresh etc.
          */
         modelName = "";
 
@@ -228,11 +260,13 @@ public class Gui{
                 int returnVal = chooser.showOpenDialog(panel1);
                 if (returnVal == JFileChooser.APPROVE_OPTION) {
                     modelName = chooser.getSelectedFile().getName();
-                    modelTitle.setText("SVM model: " + modelName);
+                    modelTitle.setText("SVM model: " + "\n" + modelName);
                     modelTitle.setForeground(S_GREEN);
                 }
             }
         });
+
+
     }
 
     public void guiInit(){
