@@ -192,7 +192,7 @@ public class SVM {
         }
     }
 
-    public void run(String argv[]) throws IOException
+    public void run(String argv[], Subsidiaries.hyperParameters hyperParams) throws IOException
     {
         parse_command_line(argv);
         read_problem();
@@ -213,11 +213,16 @@ public class SVM {
             param.C = bestC;
             param.gamma = bestGamma;
             System.out.println("ENDED, BEST C: " + bestC + " BEST GAMMA: " + bestGamma + "BEST ACCURANCY: " + bestAcc );
+            hyperParams.setC(bestC);
+            hyperParams.setGamma(bestGamma);
         }
-
-        model = svm.svm_train(prob,param);
-        svm.svm_save_model(model_file_name,model);
-        System.out.println("model saved");
+        else {
+            param.C = hyperParams.getC();
+            param.gamma = hyperParams.getGamma();
+            model = svm.svm_train(prob, param);
+            svm.svm_save_model(model_file_name, model);
+            System.out.println("model saved");
+        }
 
     }
 

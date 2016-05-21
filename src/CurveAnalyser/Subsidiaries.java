@@ -30,4 +30,30 @@ public class Subsidiaries {
         }
     }
 
+    public class hyperParameters{
+        double c;
+        double gamma;
+
+        public hyperParameters(double c, double gamma){
+            this.c = c;
+            this.gamma = gamma;
+        }
+
+        public double getC() {
+            return c;
+        }
+
+        public void setC(double c) {
+            this.c = c;
+        }
+
+        public double getGamma() {
+            return gamma;
+        }
+
+        public void setGamma(double gamma) {
+            this.gamma = gamma;
+        }
+    }
+
 }
