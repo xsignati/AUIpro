@@ -50,17 +50,21 @@ public class CurveAnalyser {
         catch (SQLException e){}
     }
 
-    public void startCurveAnalyser(Gui gui, Subsidiaries.CAmode mode, SVM svm, String selSessionID, String selModelName){
-        switch (mode) {
+    public void startCurveAnalyser(Subsidiaries.RunParams runParams){
+        switch (runParams.caMode) {
             case CALCULATE :
-                calculateAllFeatures(gui);
+                calculateAllFeatures(runParams.gui);
                 break;
             case TRAIN :
-                trainSVM(gui, svm, selSessionID);
+                trainSVM(runParams.gui, runParams.svm, runParams.trainOptSel);
                 break;
             case TEST :
-                testSVM(gui, svm, selSessionID, selModelName);
+                testSVM(runParams.gui, runParams.svm, runParams.testOptSel, runParams.modelName);
                 break;
+            case LOAD:
+                manualLoad(runParams.manualFileName, runParams.gui);
+            case DELETE:
+                deleteDb(runParams.gui);
             default :
                 break;
         }
@@ -70,7 +74,6 @@ public class CurveAnalyser {
         try {
             System.out.println("aaa");
             dbConnect();
-
             conn.setAutoCommit(false); /**< much faster for inserts, safe for tables with timestamps */
             gui.updateBar(25, Gui.S_RED);
             dc = new DetermineCurves(conn);
@@ -90,27 +93,32 @@ public class CurveAnalyser {
         catch(SQLException e){System.out.println("Cannot achieve db");}
     }
     public void trainSVM(Gui gui, SVM svm, String selSessionID){
+        gui.updateBar(0, Gui.S_RED);
+        gui.updateTextArea("Training started. Selected SessionID: " + selSessionID, Gui.S_WHITE, false);
         dbConnect();
         tsvm = new TrainSVM(conn);
         int tsvmRes = tsvm.startTrainSVM(gui, svm, selSessionID);
         if(tsvmRes == 0){
-            gui.updateTextArea(TRAIN_OK, Gui.S_GREEN, false);
+            gui.updateTextArea(TRAIN_OK, Gui.S_WHITE, true);
+            gui.updateBar(100, Gui.S_GREEN);
         }
         else if(tsvmRes == 1){
-            gui.updateTextArea(TRAIN_E_1, Gui.S_RED, false);
+            gui.updateTextArea(TRAIN_E_1, Gui.S_RED, true);
         }
         else if(tsvmRes == 2){
-            gui.updateTextArea(TRAIN_E_2, Gui.S_RED, false);
+            gui.updateTextArea(TRAIN_E_2, Gui.S_RED, true);
         }
         dbDisconnect();
     }
 
     public void testSVM(Gui gui, SVM svm, String selSessionID, String selModelName){
+        gui.updateBar(0, Gui.S_RED);
+        gui.updateTextArea("Test started. Selected SessionID: " + selSessionID + "\nSelected Model: " + selModelName, Gui.S_WHITE, true);
         dbConnect();
         ttsvm = new TestSVM(conn);
         int ttsvmRes = ttsvm.startTestSVM(gui, svm, selSessionID, selModelName);
         if(ttsvmRes == 0){
-            gui.updateTextArea(TEST_OK, Gui.S_GREEN, false);
+            gui.updateBar(100, Gui.S_GREEN);
         }
         else if(ttsvmRes == 1){
             gui.updateTextArea(TRAIN_E_1, Gui.S_RED, false);
@@ -121,27 +129,39 @@ public class CurveAnalyser {
         dbDisconnect();
     }
 
-    public boolean deleteDb(){
+    public boolean deleteDb(Gui gui){
         try {
+            dbConnect();
+            gui.updateTextArea("Erasing database", Gui.S_RED, false);
+            gui.updateBar(0, Gui.S_RED);
             String sqlKill = "delete FROM `mousetracks`";
             Statement stKill = conn.createStatement();
             stKill.executeQuery(sqlKill);
+            gui.updateBar(20, Gui.S_RED);
             sqlKill = "delete FROM `curveparameters`";
             stKill = conn.createStatement();
             stKill.executeQuery(sqlKill);
+            gui.updateBar(40, Gui.S_RED);
             sqlKill = "delete FROM `general`";
             stKill = conn.createStatement();
             stKill.executeQuery(sqlKill);
+            gui.updateBar(60, Gui.S_RED);
             sqlKill = "delete FROM `mousecurves`";
             stKill = conn.createStatement();
             stKill.executeQuery(sqlKill);
+            gui.updateBar(80, Gui.S_RED);
             sqlKill = "delete FROM `blocks`";
             stKill = conn.createStatement();
             stKill.executeQuery(sqlKill);
+            gui.updateBar(100, Gui.S_GREEN);
+            gui.updateTextArea("Database erased", Gui.S_GREEN, false);
+            dbDisconnect();
 
             return true;
         }
-        catch(SQLException e){return false;}
+        catch(SQLException e){
+            gui.updateTextArea("Database erasing error", Gui.S_RED, false);
+            return false;}
 
     }
     public void manualLoad(String name, Gui gui){

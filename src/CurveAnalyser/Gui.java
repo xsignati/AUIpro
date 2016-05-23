@@ -1,5 +1,7 @@
 package CurveAnalyser;
 
+import sun.util.resources.cldr.bas.CurrencyNames_bas;
+
 import javax.swing.*;
 import java.awt.*;
 import java.awt.event.ActionEvent;
@@ -50,6 +52,7 @@ public class Gui{
 
     private Runnable[] guiRunners;
     private Thread[] guiThreads;
+    private Subsidiaries.RunParams runParams;
 
     public static final Color S_RED = new Color(255,135,135);
     public static final Color S_WHITE = new Color(235,235,235);
@@ -77,16 +80,16 @@ public class Gui{
         this.ca = ca;
         this.gui = this;
         this.svm = svm;
+        Subsidiaries.CAmode[] tabMod = {caMode.CALCULATE, caMode.TRAIN, caMode.TEST, caMode.LOAD, caMode.DELETE};
 
         /**
          * Threads
          */
-        guiRunners = new Runnable[3];
-        guiThreads = new Thread[3];
+        guiRunners = new Runnable[5];
+        guiThreads = new Thread[5];
 
-        Subsidiaries.CAmode [] tabMod = {caMode.CALCULATE, caMode.TRAIN, caMode.TEST};
-        for (int i = 0 ; i < 3 ; i++) {
-            guiRunners[i] = new Subsidiaries().new GuiRun(ca, gui, tabMod[i], svm, "", "");
+        for (int i = 0 ; i < 5 ; i++){
+            guiRunners[i] =  new Subsidiaries().new GuiRun(new Subsidiaries().new RunParams(ca, gui, tabMod[i], svm, "", "", "", ""));
             guiThreads[i] = new Thread(guiRunners[i]);
         }
 
@@ -101,6 +104,7 @@ public class Gui{
                 }
                 else{
                     updateTextArea(CALC, S_GREEN, false);
+                    guiRunners[0] =  new Subsidiaries().new GuiRun(new Subsidiaries().new RunParams(ca, gui, tabMod[0], svm, "", "", "", ""));
                     guiThreads[0] = new Thread(guiRunners[0]);
                     guiThreads[0].start();
 
@@ -120,8 +124,7 @@ public class Gui{
 
                 }
                 else{
-                    updateTextArea(TRAIN_STR, S_GREEN, false);
-                    guiRunners[1] =  new Subsidiaries().new GuiRun(ca, gui, tabMod[1], svm, trainOptSel, "");
+                    guiRunners[1] =  new Subsidiaries().new GuiRun(new Subsidiaries().new RunParams(ca, gui, tabMod[1], svm, trainOptSel, "", "", ""));
                     guiThreads[1] = new Thread(guiRunners[1]);
                     guiThreads[1].start();
 
@@ -142,13 +145,55 @@ public class Gui{
                 }
                 else{
                     updateTextArea(TEST_STR, S_GREEN, false);
-                    guiRunners[2] =  new Subsidiaries().new GuiRun(ca, gui, tabMod[2], svm, testOptSel, modelName);
+                    guiRunners[2] =  new Subsidiaries().new GuiRun(new Subsidiaries().new RunParams(ca, gui, tabMod[2], svm, "", testOptSel, modelName, ""));
                     guiThreads[2] = new Thread(guiRunners[2]);
                     guiThreads[2].start();
 
                 }
             }
         });
+
+        manualCMLoaderButton.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                if(processWorking()){
+                    updateTextArea(ANOTHER_PR, S_RED, false);
+                }
+                else {
+                    File workingDirectory = new File(System.getProperty("user.dir"));
+                    JFileChooser chooser = new JFileChooser();
+                    chooser.setCurrentDirectory(workingDirectory);
+                    int returnVal = chooser.showOpenDialog(panel1);
+                    if (returnVal == JFileChooser.APPROVE_OPTION) {
+                        String name = chooser.getSelectedFile().getName();
+                        guiRunners[3] =  new Subsidiaries().new GuiRun(new Subsidiaries().new RunParams(ca, gui, tabMod[3], svm, "", "", "", name));
+                        guiThreads[3] = new Thread(guiRunners[3]);
+                        guiThreads[3].start();
+                    }
+                }
+            }
+        });
+
+        clearDatabaseButton.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                if(processWorking()){
+                    updateTextArea(ANOTHER_PR, S_RED, false);
+                }
+                else {
+                    int reply = JOptionPane.showConfirmDialog(null, "Are you sure you want to delete all database data?", "Database eradication", JOptionPane.YES_NO_OPTION);
+                    if (reply == JOptionPane.YES_OPTION) {
+                        int reply2 = JOptionPane.showConfirmDialog(null, "Really?", "Database eradication", JOptionPane.YES_NO_OPTION);
+                        if (reply2 == JOptionPane.YES_OPTION) {
+                            guiRunners[4] =  new Subsidiaries().new GuiRun(new Subsidiaries().new RunParams(ca, gui, tabMod[4], svm, "", "", "", ""));
+                            guiThreads[4] = new Thread(guiRunners[4]);
+                            guiThreads[4].start();
+                        }
+                    }
+                }
+            }
+        });
+
 
         /**
          * Right menu buttons. SVM buttons lists for selected options
@@ -218,39 +263,7 @@ public class Gui{
                 ca.dbDisconnect();
             }
         });
-        manualCMLoaderButton.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                File workingDirectory = new File(System.getProperty("user.dir"));
-                JFileChooser chooser = new JFileChooser();
-                chooser.setCurrentDirectory(workingDirectory);
-                int returnVal = chooser.showOpenDialog(panel1);
-                if (returnVal == JFileChooser.APPROVE_OPTION) {
-                    String name = chooser.getSelectedFile().getName();
-                    ca.manualLoad(name, gui);
-                }
-            }
-        });
-        clearDatabaseButton.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                int reply = JOptionPane.showConfirmDialog(null, "Are you sure you want to delete all database data?", "Database eradication", JOptionPane.YES_NO_OPTION);
-                if (reply == JOptionPane.YES_OPTION) {
-                    int reply2 = JOptionPane.showConfirmDialog(null, "Really?", "Database eradication", JOptionPane.YES_NO_OPTION);
-                    if (reply2 == JOptionPane.YES_OPTION) {
-                        ca.dbConnect();
-                        if(ca.deleteDb()){
-                            JOptionPane.showMessageDialog(null, "All data deleted!");
-                        }
-                        else{
-                            JOptionPane.showMessageDialog(null, "Error deleting database!");
-                        }
 
-
-                    }
-                }
-            }
-        });
         loadModelButton.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
@@ -310,15 +323,14 @@ public class Gui{
 
     public void updateTextArea(String text, Color color, boolean cont){
         if(!cont)
-        textArea1.setText("");
+            textArea1.setText("");
         textArea1.setForeground(color);
-        textArea1.append(text);
+        textArea1.append(text + "\n" + "\n");
     }
 
     public JPanel getPanel1() {
         return panel1;
     }
-
 
 
 

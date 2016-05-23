@@ -215,6 +215,7 @@ public class SVM {
             System.out.println("ENDED, BEST C: " + bestC + " BEST GAMMA: " + bestGamma + "BEST ACCURANCY: " + bestAcc );
             hyperParams.setC(bestC);
             hyperParams.setGamma(bestGamma);
+            hyperParams.setAcc(bestAcc);
         }
         else {
             param.C = hyperParams.getC();
@@ -455,7 +456,7 @@ public class SVM {
         return Integer.parseInt(s);
     }
 
-    private static void predict(BufferedReader input, DataOutputStream output, svm_model model, int predict_probability) throws IOException
+    private static void predict(BufferedReader input, DataOutputStream output, svm_model model, int predict_probability, Subsidiaries.SVMresult svmResult) throws IOException
     {
         int correct = 0;
         int total = 0;
@@ -535,9 +536,14 @@ public class SVM {
                             ((total*sumvv-sumv*sumv)*(total*sumyy-sumy*sumy))+
                     " (regression)\n");
         }
-        else
-            info2("Accuracy = "+(double)correct/total*100+
-                    "% ("+correct+"/"+total+") (classification)\n");
+        else {
+            svmResult.setAcc((double) correct / total * 100);
+            svmResult.setVerified(correct);
+            svmResult.setTotal(total);
+            info2("Accuracy = " + (double) correct / total * 100 +
+                    "% (" + correct + "/" + total + ") (classification)\n");
+        }
+
     }
 
     private static void exit_with_help2()
@@ -549,7 +555,7 @@ public class SVM {
         System.exit(1);
     }
 
-    public static void runPredict(String argv[]) throws IOException
+    public static void runPredict(String argv[], Subsidiaries.SVMresult svmResult) throws IOException
     {
         int i, predict_probability=0;
         svm_print_string2 = svm_print_stdout2;
@@ -600,7 +606,7 @@ public class SVM {
                     info2("Model supports probability estimates, but disabled in prediction.\n");
                 }
             }
-            predict(input,output,model,predict_probability);
+            predict(input,output,model,predict_probability, svmResult);
             input.close();
             output.close();
         }
