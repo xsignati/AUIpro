@@ -22,6 +22,7 @@ public class CurveAnalyser {
     public static final String TRAIN_E_1 = "Not enough number of negative data samples (related with a selected sessionID";
     public static final String TRAIN_E_2 = "Not enough number of positive data samples (environment testing data)";
     public static final String MANUAL_OK= "All data loaded successfully";
+    public static final String MANUAL_ST = "Loading cursor tracks";
     public static final String MANUAL_ERR = "Error loading data";
     public static final String TEST_OK = "Testing completed successfully";
     public static final String TEST_E_1 = "Data is too small. Create at least one block";
@@ -63,8 +64,10 @@ public class CurveAnalyser {
                 break;
             case LOAD:
                 manualLoad(runParams.manualFileName, runParams.gui);
+                break;
             case DELETE:
                 deleteDb(runParams.gui);
+                break;
             default :
                 break;
         }
@@ -72,9 +75,8 @@ public class CurveAnalyser {
 
     public void calculateAllFeatures(Gui gui){
         try {
-            System.out.println("aaa");
             dbConnect();
-            conn.setAutoCommit(false); /**< much faster for inserts, safe for tables with timestamps */
+            conn.setAutoCommit(false); /**< faster inserts*/
             gui.updateBar(25, Gui.S_RED);
             dc = new DetermineCurves(conn);
             dc.startDetermineCurves();
@@ -87,10 +89,10 @@ public class CurveAnalyser {
             gui.updateBar(100, Gui.S_GREEN);
             gui.updateTextArea(CALC_OK, Gui.S_GREEN, false);
             conn.commit(); /**< execute all queries */
-            conn.setAutoCommit(true); /**< a safe option for table with no timestamp column */
+            conn.setAutoCommit(true);
             dbDisconnect();
         }
-        catch(SQLException e){System.out.println("Cannot achieve db");}
+        catch(SQLException e){System.out.println("Cannot achieve DB connection");}
     }
     public void trainSVM(Gui gui, SVM svm, String selSessionID){
         gui.updateBar(0, Gui.S_RED);
@@ -166,6 +168,7 @@ public class CurveAnalyser {
     }
     public void manualLoad(String name, Gui gui){
         gui.updateBar(50, Gui.S_RED);
+        gui.updateTextArea(MANUAL_ST, Gui.S_GREEN, false);
         dbConnect();
         try {
             conn.setAutoCommit(false);
@@ -184,6 +187,7 @@ public class CurveAnalyser {
         }
         catch (SQLException e){}
         dbDisconnect();
+        int a = 4;
 
     }
     public void testSVM(){}

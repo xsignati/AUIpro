@@ -2,6 +2,7 @@ package CurveAnalyser;
 
 import java.sql.Connection;
 import java.sql.ResultSet;
+import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.LinkedList;
 
@@ -11,11 +12,11 @@ import java.util.LinkedList;
 public class CalculateMetrics {
     private static final int LIST_MIDDLE = 1;
     public int aj = 0;
+
     /**
      * Database variables
      */
     private Connection conn;
-
     private LinkedList<CursorPoint> curveList;
 
     public CalculateMetrics(Connection conn){
@@ -23,56 +24,8 @@ public class CalculateMetrics {
         curveList = new LinkedList<CursorPoint>();
     }
 
-    public void startCalculateMetrics2(){
-        try {
-            //SQL
-            String SQL_CC_SID = "SELECT DISTINCT sessionID FROM `mousecurves`";
-            String currSessionID;
-            Statement stmtCcsid = conn.createStatement();
-            ResultSet rsCcsid = stmtCcsid.executeQuery(SQL_CC_SID);
-            while (rsCcsid.next()) {
-                currSessionID = rsCcsid.getString("sessionID");
-
-                /**
-                 *check if SessionID exists in CurveParameters, if it does get another SessionID
-                 */
-                String SQL_CP_SID = "SELECT sessionID FROM `curveparameters` WHERE sessionID = '"+currSessionID+"' LIMIT 1";
-                Statement stmtCpsid = conn.createStatement();
-                ResultSet rsCpsid = stmtCpsid.executeQuery(SQL_CP_SID);
-
-                if (!rsCpsid.isBeforeFirst()) {
-                    /**
-                     * Get a single curve
-                     */
-                    String SQL_CC_CID = "SELECT DISTINCT curveID FROM `mousecurves` WHERE sessionID = '"+currSessionID+"'";
-                    Statement stmtCccid = conn.createStatement();
-                    ResultSet rsCccid = stmtCccid.executeQuery(SQL_CC_CID);
-
-                    while (rsCccid.next()) {
-                        System.out.println(aj);
-                        aj++;
-                        /**
-                        * Prepare a temporary container for angle based metrics
-                         */
-                        String currCurveID = rsCccid.getString("curveID");
-                        //LinkedList<CursorPoint> curveList = new LinkedList<CursorPoint>(); /**< list for potential curves */
-                        curveList.clear();
-                        String SQL_CC_ALL = "SELECT x, y, sessionID, curveID, action, time FROM `mousecurves` WHERE curveID = '"+currCurveID+"' ORDER BY `mousecurves`.`time` ASC";
-                        Statement stmtCcall= conn.createStatement();
-                        ResultSet rsCccall = stmtCcall.executeQuery(SQL_CC_ALL);
-                        while (rsCccall.next()) {
-                            calculateFeatures(curveList, rsCccall);
-                        }
-                    }
-                }
-            }
-        }
-        catch(Exception e){}
-    }
-//test
     public void startCalculateMetrics(){
         try {
-            System.out.println("start cm");
             //SQL
             String SQL_CC_SID = "SELECT DISTINCT sessionID FROM `mousecurves`";
             String currSessionID;
@@ -118,7 +71,7 @@ public class CalculateMetrics {
                 }
             }
         }
-        catch(Exception e){}
+        catch (SQLException e) {e.printStackTrace(System.err);}
     }
     //test
 
@@ -126,7 +79,7 @@ public class CalculateMetrics {
         try {
             if (curveList.size() == 2) {
                 curveList.addLast(new CursorPoint(rsCccall.getString("sessionID"), rsCccall.getString("curveID"), rsCccall.getString("action"),
-                        rsCccall.getFloat("time"), rsCccall.getInt("x"), rsCccall.getInt("y")));
+                        rsCccall.getLong("time"), rsCccall.getInt("x"), rsCccall.getInt("y")));
                 Point pointA = new Point(curveList.getFirst().getX(), curveList.getFirst().getY());
                 Point pointB = new Point(curveList.get(LIST_MIDDLE).getX(), curveList.get(LIST_MIDDLE).getY());
                 Point pointC = new Point(curveList.getLast().getX(), curveList.getLast().getY());
@@ -148,7 +101,7 @@ public class CalculateMetrics {
                 curveList.removeFirst();
             } else {
                 curveList.addLast(new CursorPoint(rsCccall.getString("sessionID"), rsCccall.getString("curveID"), rsCccall.getString("action"),
-                        rsCccall.getFloat("time"), rsCccall.getInt("x"), rsCccall.getInt("y")));
+                        rsCccall.getLong("time"), rsCccall.getInt("x"), rsCccall.getInt("y")));
             }
         }
         catch(Exception e){}
@@ -171,7 +124,7 @@ public class CalculateMetrics {
          * count angle
          */
         double angle = Math.atan2(cross, dot);
-        angle = angle > 0 ? angle : angle * (-1);
+        angle = angle >= 0 ? angle : angle * (-1);
 
         return Math.floor(angle * 180 / Math.PI + 0.5);
     }
@@ -186,7 +139,7 @@ public class CalculateMetrics {
          *count angle AB-horizontal
          */
         double angle = Math.atan2(vectorAB.getY(), vectorAB.getX());
-        angle = angle > 0 ? angle : (angle + 2 * Math.PI);
+        angle = angle >= 0 ? angle : (angle + 2 * Math.PI);
 
         /**
          *$angle > 0 ? $angle : $angle += pi();
@@ -209,15 +162,11 @@ public class CalculateMetrics {
         /**
          * count vAC module
          */
-        //double vectorACmod = Math.sqrt(Math.pow(vectorAC.getX(),2) + Math.pow(vectorAC.getY(),2));
         double vectorACmod = vectorAC.getX() * vectorAC.getX() + vectorAC.getY() * vectorAC.getY();
         if(vectorACmod == 0){
             return (Math.sqrt(Math.pow(vectorAB.getX(),2) + Math.pow(vectorAB.getY(),2)));
         }
         else{
-            //double bACdist = Math.abs(cross)/vectorACmod;
-            //double bACdist = (cross * cross)/vectorACmod;
-            //return bACdist/vectorACmod;
             return Math.abs(cross)/vectorACmod;
         }
     }

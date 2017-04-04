@@ -17,11 +17,10 @@ public class DetermineCurves {
     /**
     * CurveAnalyser.DetermineCurves parameters
      */
-    private static final int MAX_MOVE_INTERVAL = 500; /**< milisec */
-    private static final int MAX_CLICK_INTERVAL = 2500;
-    private static final int MIN_CURVE_POINTS = 10;
-    private int curveIDit;
-    private int curveIDlimit;
+    private static final double MAX_MOVE_INTERVAL = 200 * 1e3; /**< millisecs */
+    private static final double MAX_CLICK_INTERVAL = 200 * 1e3;//90000
+    private static final int MIN_CURVE_POINTS = 50; //50
+    private static final int SAMPLING_RATE = 0;
 
     /**
     * Database variables
@@ -68,7 +67,12 @@ public class DetermineCurves {
                     /**
                      * Loop of functions that checks if mouse movements contain curves. If so, it sends them to the db
                      */
+                int hax = 0;
                     while (rsCcVals.next()) {
+                        if(hax == 200000){
+                            hax = 0;
+                        }
+                        hax++;
                             checkCursorMovements(rsCcVals, curveList);
                     }
                     rsCcVals.close();
@@ -87,49 +91,48 @@ public class DetermineCurves {
             if(curveList.isEmpty()){
                 if(rsCcVals.getString("action").equals("Moved")){
                     curveList.addLast(new CursorPoint(rsCcVals.getString("sessionID"), "none", rsCcVals.getString("action"),
-                                        rsCcVals.getFloat("time"), rsCcVals.getInt("x"), rsCcVals.getInt("y")));
+                                        rsCcVals.getLong("time"), rsCcVals.getInt("x"), rsCcVals.getInt("y")));
                 }
             }
             else{
                 if(rsCcVals.getString("action").equals("Moved")){
-                    if((rsCcVals.getFloat("time") - curveList.getLast().getTime()) < MAX_MOVE_INTERVAL){
+                    if((rsCcVals.getDouble("time") - curveList.getLast().getTime()) < MAX_MOVE_INTERVAL){
                         if((rsCcVals.getInt("x") == curveList.getLast().getX()) && (rsCcVals.getInt("y") == curveList.getLast().getY())){
                             curveList.removeLast();
                             curveList.addLast(new CursorPoint(rsCcVals.getString("sessionID"), "none", rsCcVals.getString("action"),
-                                                rsCcVals.getFloat("time"), rsCcVals.getInt("x"), rsCcVals.getInt("y")));
+                                                rsCcVals.getLong("time"), rsCcVals.getInt("x"), rsCcVals.getInt("y")));
                         }
-                        else{
+                        else if (sampling(rsCcVals.getInt("x") - curveList.getLast().getX(), rsCcVals.getInt("y") - curveList.getLast().getY())){
                             curveList.addLast(new CursorPoint(rsCcVals.getString("sessionID"), "none", rsCcVals.getString("action"),
-                                                rsCcVals.getFloat("time"), rsCcVals.getInt("x"), rsCcVals.getInt("y")));
+                                                rsCcVals.getLong("time"), rsCcVals.getInt("x"), rsCcVals.getInt("y")));
                         }
                     }
                     else{
                         curveList.clear();
                         curveList.addLast(new CursorPoint(rsCcVals.getString("sessionID"), "none", rsCcVals.getString("action"),
-                                            rsCcVals.getFloat("time"), rsCcVals.getInt("x"), rsCcVals.getInt("y")));
+                                            rsCcVals.getLong("time"), rsCcVals.getInt("x"), rsCcVals.getInt("y")));
                     }
                 }
                 else{
-                    if((curveList.size() > MIN_CURVE_POINTS) && ((rsCcVals.getFloat("time") - curveList.getLast().getTime()) < MAX_CLICK_INTERVAL)){
+                    if((curveList.size() > MIN_CURVE_POINTS) && ((rsCcVals.getLong("time") - curveList.getLast().getTime()) < MAX_CLICK_INTERVAL)){
                         if((rsCcVals.getInt("x") == curveList.getLast().getX()) && (rsCcVals.getInt("y") == curveList.getLast().getY())){
                             curveList.removeLast();
                             curveList.addLast(new CursorPoint(rsCcVals.getString("sessionID"), "none", rsCcVals.getString("action"),
-                                                rsCcVals.getFloat("time"), rsCcVals.getInt("x"), rsCcVals.getInt("y")));
+                                                rsCcVals.getLong("time"), rsCcVals.getInt("x"), rsCcVals.getInt("y")));
                         }
                         else{
                             curveList.addLast(new CursorPoint(rsCcVals.getString("sessionID"), "none", rsCcVals.getString("action"),
-                                                rsCcVals.getFloat("time"), rsCcVals.getInt("x"), rsCcVals.getInt("y")));
+                                                rsCcVals.getLong("time"), rsCcVals.getInt("x"), rsCcVals.getInt("y")));
                         }
                         /**
                          * send curves to database
                          */
                         String curveID = UUID.randomUUID().toString();
                         Statement stmtCcAll;
-                        ResultSet rsCcAll;
                         for (CursorPoint cp : curveList) {
                             String sqlCcAll = "INSERT INTO MouseCurves (sessionID, curveID, action, time, x, y) VALUES ( '"+cp.getSessionID()+"', '"+curveID+"', '"+cp.getAction()+"', '"+cp.getTime()+"', '"+cp.getX()+"', '"+cp.getY()+"')";
                             stmtCcAll = conn.createStatement();
-                            rsCcAll = stmtCcAll.executeQuery(sqlCcAll);
+                            stmtCcAll.executeQuery(sqlCcAll);
                         }
                         curveList.clear();
                     }
@@ -140,6 +143,13 @@ public class DetermineCurves {
             }
         }
         catch(SQLException e){}
+    }
+
+    public boolean sampling(int vecX, int vecY){
+        if(Math.sqrt(Math.pow(vecX,2) + Math.pow(vecY,2)) > SAMPLING_RATE)
+            return true;
+        else
+            return false;
     }
 
 }

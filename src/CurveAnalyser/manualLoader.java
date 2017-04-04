@@ -42,17 +42,20 @@ public class ManualLoader {
                     int skipLineIt = 0;
                     double timeCorrect = 0;
                     String line;
+                    int co = 0;
                     while ((line = in.readLine()) != null) {
                         if(skipLineIt > SKIP_LINES_NUM) {
+                            co++;
+                            System.out.println(co);
                             String[] parts = line.split("\t");
 
                             if(parts[1].equals("Pressed Left"))
                                 parts[1] = "Clicked";
                             parts[0] = parts[0].replace(",", ".");
-                            double time = Double.parseDouble(parts[0]) * 1000;
+                            double time = Double.parseDouble(parts[0]) * 1e6;
 
                             if(time <= timeCorrect){
-                                time = timeCorrect + 1;
+                                time = timeCorrect + 1000;
                             }
                             timeCorrect = time;
 

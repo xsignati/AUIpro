@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <form xmlns="http://www.intellij.com/uidesigner/form/" version="1" bind-to-class="CurveAnalyser.Gui">
-  <grid id="27dc6" binding="panel1" default-binding="true" layout-manager="GridLayoutManager" row-count="12" column-count="19" same-size-horizontally="false" same-size-vertically="false" hgap="-1" vgap="-1">
+  <grid id="27dc6" binding="panel1" default-binding="true" layout-manager="GridLayoutManager" row-count="23" column-count="19" same-size-horizontally="false" same-size-vertically="false" hgap="-1" vgap="-1">
     <margin top="0" left="0" bottom="0" right="0"/>
     <constraints>
       <xy x="20" y="20" width="1370" height="854"/>
@@ -26,7 +26,7 @@
       </component>
       <scrollpane id="4f5c2" binding="logPane">
         <constraints>
-          <grid row="9" column="0" row-span="2" col-span="14" vsize-policy="3" hsize-policy="3" anchor="0" fill="3" indent="0" use-parent-layout="false"/>
+          <grid row="9" column="1" row-span="13" col-span="13" vsize-policy="3" hsize-policy="3" anchor="0" fill="3" indent="0" use-parent-layout="false"/>
         </constraints>
         <properties>
           <font size="22"/>
@@ -47,7 +47,7 @@
       </scrollpane>
       <scrollpane id="79ef1" binding="trainPane">
         <constraints>
-          <grid row="1" column="15" row-span="5" col-span="4" vsize-policy="3" hsize-policy="3" anchor="0" fill="3" indent="0" use-parent-layout="false"/>
+          <grid row="1" column="15" row-span="8" col-span="4" vsize-policy="3" hsize-policy="3" anchor="0" fill="3" indent="0" use-parent-layout="false"/>
         </constraints>
         <properties/>
         <border type="etched"/>
@@ -65,7 +65,7 @@
       </scrollpane>
       <scrollpane id="fe4e9" binding="testPane">
         <constraints>
-          <grid row="10" column="15" row-span="1" col-span="4" vsize-policy="3" hsize-policy="3" anchor="0" fill="3" indent="0" use-parent-layout="false"/>
+          <grid row="10" column="15" row-span="12" col-span="4" vsize-policy="3" hsize-policy="3" anchor="0" fill="3" indent="0" use-parent-layout="false"/>
         </constraints>
         <properties/>
         <border type="etched">
@@ -82,68 +82,9 @@
           </component>
         </children>
       </scrollpane>
-      <component id="3aad6" class="javax.swing.JButton" binding="trainSVMButton" default-binding="true">
-        <constraints>
-          <grid row="6" column="15" row-span="4" col-span="2" vsize-policy="3" hsize-policy="3" anchor="0" fill="1" indent="0" use-parent-layout="false"/>
-        </constraints>
-        <properties>
-          <background color="-9999763"/>
-          <font size="18"/>
-          <foreground color="-1315861"/>
-          <opaque value="true"/>
-          <text value="Train SVM"/>
-        </properties>
-      </component>
-      <component id="fb578" class="javax.swing.JButton" binding="calculateBlocksButton" default-binding="true">
-        <constraints>
-          <grid row="1" column="1" row-span="2" col-span="13" vsize-policy="3" hsize-policy="3" anchor="0" fill="1" indent="0" use-parent-layout="false"/>
-        </constraints>
-        <properties>
-          <background color="-9999763"/>
-          <focusCycleRoot value="false"/>
-          <font size="18"/>
-          <foreground color="-2235157"/>
-          <horizontalAlignment value="0"/>
-          <rolloverEnabled value="true"/>
-          <text value="Calculate Blocks"/>
-          <toolTipText value="Connect to database. Determine curves. Calculate angle based metrics. Prepare feature vectors for SVM (blocks)"/>
-        </properties>
-      </component>
-      <component id="19b74" class="javax.swing.JButton" binding="manualCMLoaderButton" default-binding="true">
-        <constraints>
-          <grid row="3" column="1" row-span="1" col-span="13" vsize-policy="3" hsize-policy="3" anchor="0" fill="1" indent="0" use-parent-layout="false"/>
-        </constraints>
-        <properties>
-          <background color="-9999763"/>
-          <font size="18"/>
-          <foreground color="-2235157"/>
-          <text value="Load Cursor Movements"/>
-        </properties>
-      </component>
-      <component id="a625" class="javax.swing.JButton" binding="clearDatabaseButton" default-binding="true">
-        <constraints>
-          <grid row="4" column="1" row-span="1" col-span="13" vsize-policy="3" hsize-policy="3" anchor="0" fill="1" indent="0" use-parent-layout="false"/>
-        </constraints>
-        <properties>
-          <background color="-12313831"/>
-          <font size="18"/>
-          <foreground color="-6272680"/>
-          <text value="Clear Database"/>
-        </properties>
-      </component>
-      <component id="46104" class="javax.swing.JProgressBar" binding="progressBar1" default-binding="true">
-        <constraints>
-          <grid row="8" column="1" row-span="1" col-span="13" vsize-policy="1" hsize-policy="1" anchor="0" fill="1" indent="0" use-parent-layout="false"/>
-        </constraints>
-        <properties>
-          <background color="-6052957"/>
-          <foreground color="-2235157"/>
-          <stringPainted value="true"/>
-        </properties>
-      </component>
       <component id="f369" class="javax.swing.JButton" binding="testSVMButton" default-binding="true">
         <constraints>
-          <grid row="11" column="15" row-span="1" col-span="3" vsize-policy="3" hsize-policy="3" anchor="0" fill="1" indent="0" use-parent-layout="false"/>
+          <grid row="22" column="15" row-span="1" col-span="3" vsize-policy="3" hsize-policy="3" anchor="0" fill="1" indent="0" use-parent-layout="false"/>
         </constraints>
         <properties>
           <background color="-9999763"/>
@@ -156,7 +97,7 @@
       </component>
       <component id="bc263" class="javax.swing.JButton" binding="loadModelButton" default-binding="true">
         <constraints>
-          <grid row="11" column="18" row-span="1" col-span="1" vsize-policy="0" hsize-policy="3" anchor="0" fill="1" indent="0" use-parent-layout="false"/>
+          <grid row="22" column="18" row-span="1" col-span="1" vsize-policy="0" hsize-policy="3" anchor="0" fill="1" indent="0" use-parent-layout="false"/>
         </constraints>
         <properties>
           <background color="-9999763"/>
@@ -167,7 +108,7 @@
       </component>
       <component id="65295" class="javax.swing.JButton" binding="button1" default-binding="true">
         <constraints>
-          <grid row="11" column="3" row-span="1" col-span="1" vsize-policy="3" hsize-policy="3" anchor="0" fill="1" indent="0" use-parent-layout="false"/>
+          <grid row="22" column="3" row-span="1" col-span="1" vsize-policy="3" hsize-policy="3" anchor="0" fill="1" indent="0" use-parent-layout="false"/>
         </constraints>
         <properties>
           <background color="-9999763"/>
@@ -178,7 +119,7 @@
       </component>
       <scrollpane id="55f16" binding="modelPane">
         <constraints>
-          <grid row="11" column="8" row-span="1" col-span="1" vsize-policy="3" hsize-policy="3" anchor="4" fill="0" indent="0" use-parent-layout="false">
+          <grid row="22" column="8" row-span="1" col-span="1" vsize-policy="3" hsize-policy="3" anchor="4" fill="0" indent="0" use-parent-layout="false">
             <minimum-size width="150" height="40"/>
             <preferred-size width="150" height="40"/>
           </grid>
@@ -217,13 +158,72 @@
       </scrollpane>
       <component id="d7926" class="javax.swing.JButton" binding="refreshButton" default-binding="true">
         <constraints>
-          <grid row="11" column="4" row-span="1" col-span="4" vsize-policy="3" hsize-policy="3" anchor="0" fill="1" indent="0" use-parent-layout="false"/>
+          <grid row="22" column="4" row-span="1" col-span="4" vsize-policy="3" hsize-policy="3" anchor="0" fill="1" indent="0" use-parent-layout="false"/>
         </constraints>
         <properties>
           <background color="-9999763"/>
           <font size="18"/>
           <foreground color="-2235157"/>
           <text value="Refresh"/>
+        </properties>
+      </component>
+      <component id="19b74" class="javax.swing.JButton" binding="manualCMLoaderButton" default-binding="true">
+        <constraints>
+          <grid row="1" column="1" row-span="1" col-span="13" vsize-policy="3" hsize-policy="3" anchor="0" fill="1" indent="0" use-parent-layout="false"/>
+        </constraints>
+        <properties>
+          <background color="-9999763"/>
+          <font size="18"/>
+          <foreground color="-2235157"/>
+          <text value="Load Cursor Movements"/>
+        </properties>
+      </component>
+      <component id="fb578" class="javax.swing.JButton" binding="calculateBlocksButton" default-binding="true">
+        <constraints>
+          <grid row="2" column="1" row-span="1" col-span="13" vsize-policy="3" hsize-policy="3" anchor="0" fill="1" indent="0" use-parent-layout="false"/>
+        </constraints>
+        <properties>
+          <background color="-9999763"/>
+          <focusCycleRoot value="false"/>
+          <font size="18"/>
+          <foreground color="-2235157"/>
+          <horizontalAlignment value="0"/>
+          <rolloverEnabled value="true"/>
+          <text value="Calculate Blocks"/>
+          <toolTipText value="Connect to database. Determine curves. Calculate angle based metrics. Prepare feature vectors for SVM (blocks)"/>
+        </properties>
+      </component>
+      <component id="3aad6" class="javax.swing.JButton" binding="trainSVMButton" default-binding="true">
+        <constraints>
+          <grid row="9" column="15" row-span="1" col-span="4" vsize-policy="3" hsize-policy="3" anchor="0" fill="1" indent="0" use-parent-layout="false"/>
+        </constraints>
+        <properties>
+          <background color="-9999763"/>
+          <font size="18"/>
+          <foreground color="-1315861"/>
+          <opaque value="true"/>
+          <text value="Train SVM"/>
+        </properties>
+      </component>
+      <component id="a625" class="javax.swing.JButton" binding="clearDatabaseButton" default-binding="true">
+        <constraints>
+          <grid row="3" column="1" row-span="1" col-span="13" vsize-policy="3" hsize-policy="3" anchor="0" fill="1" indent="0" use-parent-layout="false"/>
+        </constraints>
+        <properties>
+          <background color="-12313831"/>
+          <font size="18"/>
+          <foreground color="-6272680"/>
+          <text value="Clear Database"/>
+        </properties>
+      </component>
+      <component id="46104" class="javax.swing.JProgressBar" binding="progressBar1" default-binding="true">
+        <constraints>
+          <grid row="8" column="1" row-span="1" col-span="13" vsize-policy="1" hsize-policy="1" anchor="0" fill="1" indent="0" use-parent-layout="false"/>
+        </constraints>
+        <properties>
+          <background color="-6052957"/>
+          <foreground color="-2235157"/>
+          <stringPainted value="true"/>
         </properties>
       </component>
     </children>

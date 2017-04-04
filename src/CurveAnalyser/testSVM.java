@@ -18,11 +18,13 @@ public class TestSVM {
     private Connection conn;
     private String inputName;
     private LinkedList<String> neutralBlockList;
+    private Subsidiaries.SVMresult svmResult;
 
 
     public TestSVM(Connection conn) {
         //sql
         this.conn = conn;
+        svmResult = new Subsidiaries().new SVMresult(0,0,0);
     }
 
     public int startTestSVM(Gui gui, SVM svm, String selSessionID, String selModelName){
@@ -48,9 +50,11 @@ public class TestSVM {
             if(negativeBlocks < 1){return 1;}
 
             /**
-             * Training
+             * Create testing data input
              */
+            gui.updateBar(25, Gui.S_RED);
             createSvmInput(selectedNeutral);
+            gui.updateBar(50, Gui.S_RED);
 
             /**
              * test SVM
@@ -59,16 +63,24 @@ public class TestSVM {
 
             try {
                 double[] prob_estimates = new double[2];
-                String output = "modelName_" + "result.txt";
+                String output = modelName + "_result.txt";
                 String[] argv = {inputName, modelName, output};
-                svm.runPredict(argv);
+                svm.runPredict(argv, svmResult);
+                gui.updateBar(99, Gui.S_RED);
+                if(svmResult.getAcc() > 90) {
+                    gui.updateTextArea("Test completed. Result:\n" + "Accuracy: " + svmResult.getAcc() +
+                            "\nCorrect:" + svmResult.getVerified() + "\nTotal: " + svmResult.getTotal(), Gui.S_GREEN, true);
+                }
+                else{
+                    gui.updateTextArea("Test completed. Result:\n" + "Accuracy: " + svmResult.getAcc() +
+                            "\nCorrect:" + svmResult.getVerified() + "\nTotal: " + svmResult.getTotal(), Gui.S_RED, true);
+                }
             }
             catch (IOException e){System.out.println("SVM START ERROR");}
 
 
         }
         catch (SQLException e){System.out.println("ERROR");}
-
 
         return 0;
     }
@@ -98,11 +110,14 @@ public class TestSVM {
                  */
                 currBlockID = rsBbid.getString("BlockID");
 
-                String SQL_B_ALL = "SELECT feature FROM `blocks` WHERE SessionID = '" + selectedNeutral + "' AND BlockID = '" + currBlockID + "'";
+                String SQL_B_ALL = "SELECT feature FROM `blocks` WHERE SessionID = '" + selectedNeutral + "' AND BlockID = '" + currBlockID + "' ORDER BY featID ASC";
                 Statement stmtBall = conn.createStatement();
                 ResultSet rsBall = stmtBall.executeQuery(SQL_B_ALL);
                 while (rsBall.next()) {
                     if (rsBall.getDouble("feature") > 0) {
+                        blockRow = blockRow + rowIt + ":" + rsBall.getDouble("feature") + " ";
+                    }
+                    else{
                         blockRow = blockRow + rowIt + ":" + rsBall.getDouble("feature") + " ";
                     }
                     rowIt++;
@@ -130,18 +145,26 @@ public class TestSVM {
         }
         else{inputName = "test_" + selectedNeutral + ".txt";}
 
-        FileWriter fr;
+        FileWriter fr = null;
+        BufferedWriter br = null;
         String newLine = System.getProperty("line.separator");
+
         try {
             fr = new FileWriter(f);
-            BufferedWriter br  = new BufferedWriter(fr);
+            br  = new BufferedWriter(fr);
 
             for (int i = 0 ; i < neutralBlockList.size() ; i++){
                 br.write(neutralBlockList.get(i) + newLine);
             }
-            fr.close();
+
+        } catch (IOException e){
+        } finally{
+            try {
+                br.close();
+                fr.close();
+            }
+            catch (IOException e){}
         }
-        catch (IOException e){}
     }
 
 }

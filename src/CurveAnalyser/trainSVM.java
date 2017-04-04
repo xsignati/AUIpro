@@ -14,17 +14,19 @@ import java.util.*;
  * Created by Flexscan2243 on 30.04.2016.
  */
 public class TrainSVM {
-    private static final int HALF_TRAINING_DATA_SIZE = 29;
+    private static final int HALF_TRAINING_DATA_SIZE = 48;
+    private static final int HALF_CV_DATA_SIZE = 1;
+    private static final int posUserNum = 3;
+    private static final int BLOCK_IT_LIMIT = 9999999;
     private Connection conn;
-    private SVM svm;
-    private LinkedList<String> negBlockList;
-    private LinkedList<String> posBlockList;
-    private LinkedList<String> fullBlockList;
-    private String inputName;
-    private String blockRow;
-    private ArrayList<Integer> bidSumVector;
-    private int[] blocksSumVec;
-    private RandomInputType rit;
+    private int positiveBlocks;
+    private int negativeBlocks;
+    private String cvInputName;
+    private String trainInputName;
+    private LinkedList<String> cvBlockList;
+    private LinkedList<String> trainBlockList;
+    private Subsidiaries.hyperParameters hyperParams;
+
 
 
 
@@ -33,26 +35,24 @@ public class TrainSVM {
         this.conn = conn;
 
         //name
-        inputName = "";
+        cvInputName = "";
+        trainInputName = "";
         // lists
-        negBlockList = new LinkedList<String>();
-        posBlockList = new LinkedList<String>();
-        fullBlockList = new LinkedList<String>();
+        cvBlockList = new LinkedList<String>();
+        trainBlockList = new LinkedList<String>();
 
-        //random
-        bidSumVector = new ArrayList<Integer>();
+        //hyperParams
+        hyperParams = new Subsidiaries().new hyperParameters(0,0,0);
 
     }
 
 
-
-    public int startTrainSVM(Gui gui, SVM svm){
-        /** Warning: getting the select list indirectly from Gui might be unsafe. A copy of list should be used. TO DO soon */
+    public int startTrainSVM(Gui gui, SVM svm, String selSessionID){
         try {
             /**
              * Get sessionIDs selected in GUI (temporary solution)
              */
-            String selectedNegative = gui.getTrainOptSel();
+            String selectedNegative = selSessionID;
 
             /**
              * Check if there is a appropriate number of blocks if so - continue, if not - abort
@@ -62,7 +62,7 @@ public class TrainSVM {
             Statement stmtBsum = conn.createStatement();
             ResultSet rsBsum = stmtBsum.executeQuery(SQL_B_SUM);
             rsBsum.next();
-            int positiveBlocks = rsBsum.getInt("s");
+            positiveBlocks = rsBsum.getInt("s");
 
             /**
              * Count negative ones
@@ -71,42 +71,43 @@ public class TrainSVM {
             Statement stmtBsum2 = conn.createStatement();
             ResultSet rsBsum2 = stmtBsum2.executeQuery(SQL_B_SUM2);
             rsBsum2.next();
+            negativeBlocks = rsBsum2.getInt("c");
 
             /**
              * Return if the data is too small
              */
-            int negativeBlocks = rsBsum2.getInt("c");
-            if(negativeBlocks < HALF_TRAINING_DATA_SIZE){return 1;}
-            else if(positiveBlocks < HALF_TRAINING_DATA_SIZE){return 2;}
+            if(negativeBlocks < (HALF_TRAINING_DATA_SIZE + HALF_CV_DATA_SIZE)){return 1;}
+            else if(positiveBlocks < (HALF_TRAINING_DATA_SIZE + HALF_CV_DATA_SIZE) ){return 2;}
 
             /**
-             * Training
+             * Create SVM input data
              */
-            createSvmInput(selectedNegative, rit.NEGATIVE, 0);
-            createSvmInput(selectedNegative, rit.POSITIVE, 0);
-            shuffleBlockLists();
-            for(String s : negBlockList){
-                System.out.println(s);
-            }
-            for(String s : posBlockList){
-                System.out.println(s);
-            }
-            System.out.println("all: ");
-            for(String s : fullBlockList){
-                System.out.println(s);
-            }
-            writeToFile(selectedNegative);
-
+            gui.updateBar(25, Gui.S_RED);
+            createSvmInput(selectedNegative);
+            gui.updateBar(50, Gui.S_RED);
             /**
-             * Get the best hyperparameters C and Gamma
+             * Grid search cross validation
              */
-            String[] argv = {"-v","5", inputName};
+            String[] argv = {"-v","10", cvInputName};
+
             try {
-                svm.run(argv);
+                svm.run(argv, hyperParams);
+                gui.updateBar(75, Gui.S_RED);
+                gui.updateTextArea("Grid search cross validation completed. \nSelected parameters: \nC: " + hyperParams.getC() + "\nGamma: " + hyperParams.getGamma() + "\nAccuracy: " + hyperParams.getAcc(), Gui.S_WHITE, true);
             }
-            catch (IOException e){System.out.println("SVM START ERROR");}
-            System.out.println("training ended...");
+            catch (IOException e){
+                gui.updateTextArea("Grid search cross validation error", Gui.S_RED, true);}
+            /**
+             * Train
+             */
+            String[] argv2 = {trainInputName};
 
+            try {
+                gui.updateBar(99, Gui.S_RED);
+                svm.run(argv2, hyperParams);
+                gui.updateTextArea("SVM model trained and saved to a file successfully", Gui.S_WHITE, true);
+            }
+            catch (IOException e){gui.updateTextArea("Error training SVM model", Gui.S_RED, true);}
 
         }
         catch (SQLException e){System.out.println("ERROR");}
@@ -115,9 +116,10 @@ public class TrainSVM {
         return 0;
     }
 
-    public void writeToFile(String selectedNegative){
+    public String writeToFile(String selectedNegative, LinkedList<String> fullBlockList){
         File f = new File(selectedNegative + ".txt");
         int fIt = 1;
+        String inputName = "";
         if(f.exists() && !f.isDirectory()) {
             while(f.exists() && !f.isDirectory()) {
                 f = new File(selectedNegative + " (" + fIt + ")" + ".txt");
@@ -127,72 +129,27 @@ public class TrainSVM {
         }
         else{inputName = selectedNegative + ".txt";}
 
-        FileWriter fr;
+        FileWriter fr = null;
+        BufferedWriter br = null;
         String newLine = System.getProperty("line.separator");
+
         try {
             fr = new FileWriter(f);
-            BufferedWriter br  = new BufferedWriter(fr);
+            br  = new BufferedWriter(fr);
 
             for (int i = 0 ; i < fullBlockList.size() ; i++){
                 br.write(fullBlockList.get(i) + newLine);
             }
-            fr.close();
-        }
-        catch (IOException e){}
 
-
-    }
-    private void createBlocksSumVec(ResultSet rs, int usedData ){
-        try {
-            bidSumVector = new ArrayList<Integer>();
-            while (rs.next()) {
-                if(rs.getInt("c") - usedData > 0) {
-                    bidSumVector.add(rs.getInt("c"));
-                }
-                else{
-                    bidSumVector.add(0);
-                }
+        } catch (IOException e){
+        } finally{
+            try {
+                br.close();
+                fr.close();
             }
-            while (rs.previous()) {} /**< reset the pointer */
-
-            int segArrSize = bidSumVector.size();
-            blocksSumVec = new int[segArrSize];
-
-            int randSegSize;
-            int rest;
-            int currHTDS = HALF_TRAINING_DATA_SIZE;
-            boolean rearrangeArray = true;
-
-            for (int i = 0 ; i < segArrSize ; i++){
-                if(rearrangeArray) {
-                    randSegSize = currHTDS / (segArrSize - i);
-                    rest = currHTDS - randSegSize * (segArrSize - i);
-                    for (int j = i; j < segArrSize; j++) {
-                        if (rest > 0) {
-                            blocksSumVec[j] = randSegSize + 1;
-                            rest--;
-                        } else {
-                            blocksSumVec[j] = randSegSize;
-                        }
-                    }
-                }
-
-                if(bidSumVector.get(i) - usedData < blocksSumVec[i]){
-                    blocksSumVec[i] = bidSumVector.get(i) - usedData;
-                    rearrangeArray = true;
-                }
-                else {rearrangeArray = false;}
-
-                currHTDS -= blocksSumVec[i];
-
-            }
-//            for(int i = 0 ; i < randomVector.length ; i++) {
-//                System.out.println(randomVector[i]);
-//            }
+            catch (IOException e){}
         }
-        catch (SQLException e) {
-        }
-
+        return inputName;
     }
 
     private void shuffleArray(int[] array)
@@ -208,151 +165,144 @@ public class TrainSVM {
         }
     }
 
-    public int[] createRandomizationVector(int sessionIt){
-        int[] randomVec = new int[blocksSumVec[sessionIt]];
-        int[] tmpVec = new int[bidSumVector.get(sessionIt)];
-        for(int i = 0 ; i < bidSumVector.get(sessionIt) ; i++){
+    public int[] createRandomizationVector(int halfDataSize, int size){
+        int[] randomVec = new int[halfDataSize];
+        int[] tmpVec = new int[size];
+        for(int i = 0 ; i < tmpVec.length ; i++){
             tmpVec[i] = i;
         }
-
         shuffleArray(tmpVec);
-        for(int i = 0 ; i < blocksSumVec[sessionIt] ; i++){
+
+        for(int i = 0 ; i < randomVec.length ; i++){
             randomVec[i] = tmpVec[i];
         }
         Arrays.sort(randomVec);
 
+        for (int i = 0 ; i < randomVec.length ; i++){
+            System.out.print("," + randomVec[i]);
+        }
+        System.out.print("\n");
         return randomVec;
     }
 
-    public void createSvmInput(String selectedNegative, RandomInputType r, int usedData){
+    public void shuffleBlockLists(LinkedList<String> fullBlockList, LinkedList<String> negBlockList, LinkedList<String> posBlockList, int halfDataSize){
+//        for (int i = 0 ; i < halfDataSize ; i++){
+//            fullBlockList.add(negBlockList.get(i));
+//            fullBlockList.add(posBlockList.get(i));
+//        }
+        fullBlockList.addAll(negBlockList);
+        fullBlockList.addAll(posBlockList);
+        Collections.shuffle(fullBlockList);
+    }
+
+    public void createSvmInput(String selectedNegative){
         /**
-         * Negative/Positive input settings.
-         * Get all necessary sessionIDs
+         * Negative/Positive samples list queries
          */
-        String SQL_B_SID_CNT;
-        String blockRowType;
-        LinkedList<String> blockList;
+        String SQL_B_SID_CNT_N = "SELECT `blocks`.sessionID, blockID, sums.mark_sum " +
+            "FROM `blocks` " +
+            "INNER JOIN (select sessionID, count(DISTINCT blockID) AS mark_sum " +
+            "FROM `blocks` " +
+            "GROUP BY sessionID) AS sums ON sums.sessionID = `blocks`.sessionID " +
+            "WHERE `blocks`.sessionID = '"+selectedNegative+"' " +
+            "GROUP BY sessionID, blockID " +
+            "ORDER BY sums.mark_sum ASC";
 
-        if(r == rit.NEGATIVE){
-            SQL_B_SID_CNT = "SELECT SessionID, COUNT(DISTINCT blockID) AS c FROM `blocks` WHERE sessionID = '" + selectedNegative + "' GROUP BY sessionID ORDER BY c ASC";
-            blockRowType = "-1 ";
-            negBlockList = new LinkedList<String>();
-            fullBlockList = new LinkedList<String>();
-            blockList = negBlockList;
-        }
-        else{
-            SQL_B_SID_CNT = "SELECT SessionID, COUNT(DISTINCT blockID) AS c FROM `blocks` WHERE sessionID != '" + selectedNegative + "' GROUP BY sessionID ORDER BY c ASC";
-            blockRowType = "1 ";
-            posBlockList = new LinkedList<String>();
-            fullBlockList = new LinkedList<String>();
-            blockList = posBlockList;
-        }
+        //String magda = "magdawe";
+        String SQL_B_SID_CNT_P = "SELECT `blocks`.sessionID, blockID, sums.mark_sum " +
+                "FROM `blocks` " +
+                "INNER JOIN (select sessionID, count(DISTINCT blockID) AS mark_sum " +
+                "FROM `blocks` " +
+                "GROUP BY sessionID) AS sums ON sums.sessionID = `blocks`.sessionID " +
+                "WHERE `blocks`.sessionID != '"+selectedNegative+"' " +
+                "GROUP BY sessionID, blockID " +
+                "ORDER BY sums.mark_sum ASC";
+//        String SQL_B_SID_CNT_P = "SELECT `blocks`.sessionID, blockID, sums.mark_sum " +
+//            "FROM `blocks` " +
+//            "INNER JOIN (select sessionID, count(DISTINCT blockID) AS mark_sum " +
+//            "FROM `blocks` " +
+//            "GROUP BY sessionID) AS sums ON sums.sessionID = `blocks`.sessionID " +
+//            "WHERE `blocks`.sessionID != '"+selectedNegative+"' " +
+//            "GROUP BY sessionID, blockID " +
+//            "ORDER BY sums.mark_sum ASC";
+
         try {
-
-            Statement stmtBsidCnt = conn.createStatement();
-            ResultSet rsBsid = stmtBsidCnt.executeQuery(SQL_B_SID_CNT);
-            String currSessionID;
+            /**
+             * Get a list of positive and negative samples grouped by blockID
+             */
+            Statement stmtBsidCntN = conn.createStatement();
+            ResultSet rsBsidN = stmtBsidCntN.executeQuery(SQL_B_SID_CNT_N);
+            Statement stmtBsidCntP = conn.createStatement();
+            ResultSet rsBsidP = stmtBsidCntP.executeQuery(SQL_B_SID_CNT_P);
 
             /**
-             * Create a randomization vector. Init session iterator for it
+             * Temporary lists
              */
-            createBlocksSumVec(rsBsid, usedData);
-            //blockList = new LinkedList<String>();
+            LinkedList<String> trainNegativeBlockList = new LinkedList<String>();
+            LinkedList<String> trainPositiveBlockList = new LinkedList<String>();
+            LinkedList<String> cvNegativeBlockList = new LinkedList<String>();
+            LinkedList<String> cvPositiveBlockList = new LinkedList<String>();
 
-            int sessionIt = 0;
+            int[] negRandomVec = createRandomizationVector(HALF_CV_DATA_SIZE + HALF_TRAINING_DATA_SIZE, negativeBlocks);
+            makeBlockList(rsBsidN, "-1 ", cvNegativeBlockList, trainNegativeBlockList, negRandomVec, HALF_CV_DATA_SIZE);
+
+            int[] posRandomVec = createRandomizationVector((HALF_CV_DATA_SIZE + HALF_TRAINING_DATA_SIZE) * posUserNum , positiveBlocks);
+            makeBlockList(rsBsidP, "+1 ", cvPositiveBlockList, trainPositiveBlockList, posRandomVec, HALF_CV_DATA_SIZE * posUserNum);
+
+            shuffleBlockLists(cvBlockList, cvNegativeBlockList, cvPositiveBlockList, HALF_CV_DATA_SIZE);
+            shuffleBlockLists(trainBlockList, trainNegativeBlockList, trainPositiveBlockList, HALF_TRAINING_DATA_SIZE);
+
+            //****************************************************************
+            //no seperate cv data hack (too few inputs...)
+            cvInputName = writeToFile("4cv_" + selectedNegative, trainBlockList);
+            //*******************************
+            trainInputName = writeToFile("4train_" + selectedNegative, trainBlockList);
+
+
+        }
+        catch (SQLException e){System.out.println("input sql error");}
+    }
+
+    public void makeBlockList(ResultSet rsBsid, String label, LinkedList<String> halfCvBlockList, LinkedList<String> halfTrainBlockList, int[] randomVec, int halfDataSize) {
+        int blockIt = 0;
+        try {
             while (rsBsid.next()) {
-                /**
-                 * Go to next iteration if there is no data
-                 */
-                if(bidSumVector.get(sessionIt) == 0){
-                    continue;
-                }
-
                 /**
                  * Reset data
                  */
-                if(sessionIt > 99999999){break;}
-
-
-                /**
-                 * Fetch all blockIDs specific to the current sessionID
-                 */
-                currSessionID = rsBsid.getString("SessionID");
-                String SQL_B_BID = "SELECT DISTINCT blockID FROM `blocks` WHERE sessionID = '" + currSessionID + "'";
-                Statement stmtBbid = conn.createStatement();
-                ResultSet rsBbid = stmtBbid.executeQuery(SQL_B_BID);
-                String currBlockID;
-
-                int[] randomSelectedBlocks = createRandomizationVector(sessionIt);
-                int blockIt = 0;
-
-                /**
-                 * determine start block
-                 */
-                int usedDataIt = usedData;
-                while (usedDataIt > 0){
-                    rsBbid.next();
-                    usedDataIt--;
+                if (blockIt > BLOCK_IT_LIMIT){
+                    break;
                 }
 
-                while (rsBbid.next()) {
-                    if (Arrays.binarySearch(randomSelectedBlocks, blockIt) >= 0) {
+                if (Arrays.binarySearch(randomVec, blockIt) >= 0) {
+                    String currSessionID = rsBsid.getString("sessionID");
+                    String currBlockID = rsBsid.getString("BlockID");
 
-                        /**
-                         * reset data
-                         */
-                        if(blockIt > 99999999){break;}
-                        blockRow = blockRowType;
-                        int rowIt = 0;
-                        /**
-                         * Get all features needed to create a one feature vector (one SVM sample)
-                         */
-                        currBlockID = rsBbid.getString("BlockID");
-
-                        String SQL_B_ALL = "SELECT feature FROM `blocks` WHERE SessionID = '" + currSessionID + "' AND BlockID = '" + currBlockID + "'";
-                        Statement stmtBall = conn.createStatement();
-                        ResultSet rsBall = stmtBall.executeQuery(SQL_B_ALL);
-                        while (rsBall.next()) {
-                            if (rsBall.getDouble("feature") > 0) {
-                                blockRow = blockRow + rowIt + ":" + rsBall.getDouble("feature") + " ";
-                            }
-                            rowIt++;
+                    String SQL_B_ALL = "SELECT feature FROM `blocks` WHERE SessionID = '" + currSessionID + "' AND BlockID = '" + currBlockID + "' ORDER BY featID ASC";
+                    Statement stmtBall = conn.createStatement();
+                    ResultSet rsBall = stmtBall.executeQuery(SQL_B_ALL);
+                    int rowIt = 0;
+                    String blockRow = label;
+                    while (rsBall.next()) {
+                        if (rsBall.getDouble("feature") > 0) {
+                            blockRow = blockRow + rowIt + ":" + rsBall.getDouble("feature") + " ";
                         }
-                        /**
-                         * Save the row to the list
-                         */
-                        blockList.add(blockRow);
-
-                        /**
-                         * prepare input
-                         */
-                        prepareInput();
+                        else{
+                            blockRow = blockRow + rowIt + ":" + rsBall.getDouble("feature") + " ";
+                        }
+                        rowIt++;
                     }
-                    blockIt++;
+
+                    if(halfCvBlockList.size() < halfDataSize) {
+                        halfCvBlockList.add(blockRow);
+                    }
+                    else{
+                        halfTrainBlockList.add(blockRow);
+                    }
                 }
-                /**
-                 * iterator ++
-                 */
-                sessionIt++;
+                blockIt++;
             }
-
         }
-        catch (SQLException e){}
+        catch(SQLException e){}
     }
-
-    public void shuffleBlockLists(){
-        fullBlockList = new LinkedList<String>();
-        for (int i = 0 ; i < HALF_TRAINING_DATA_SIZE ; i++){
-            fullBlockList.add(negBlockList.get(i));
-            fullBlockList.add(posBlockList.get(i));
-        }
-    }
-
-    public void prepareInput(){}
-
-
-}
-
-enum RandomInputType{
-    NEGATIVE,POSITIVE
 }

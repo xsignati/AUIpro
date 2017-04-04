@@ -7,11 +7,11 @@ public class CursorPoint{
     private String sessionID;
     private String curveID;
     private String action;
-    private float time;
+    private long time;
     private int x;
     private int y;
 
-    public CursorPoint(String sessionID, String curveID, String action, float time, int x, int y) {
+    public CursorPoint(String sessionID, String curveID, String action, long time, int x, int y) {
         this.sessionID = sessionID;
         this.curveID = curveID;
         this.action = action;
@@ -32,7 +32,7 @@ public class CursorPoint{
         return action;
     }
 
-    public float getTime() {
+    public long getTime() {
         return time;
     }
 

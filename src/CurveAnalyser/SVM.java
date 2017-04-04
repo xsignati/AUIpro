@@ -127,7 +127,7 @@ public class SVM {
         }
 
         /**
-         * find best parameters
+         * find the best parameters
          */
         int cMaxIndex = 0;
         int gammaMaxIndex = 0;
@@ -136,6 +136,16 @@ public class SVM {
                 if (arrayAcc[i][j] > arrayAcc[cMaxIndex][gammaMaxIndex]) {
                     cMaxIndex = i;
                     gammaMaxIndex = j;
+                }
+                else if (arrayAcc[i][j] == arrayAcc[cMaxIndex][gammaMaxIndex]){
+                    if((arrayC[i] <= arrayC[cMaxIndex]) && (arrayGamma[j] - arrayGamma[gammaMaxIndex] <= 1)){
+                        cMaxIndex = i;
+                        gammaMaxIndex = j;
+                    }
+                    else if((arrayGamma[j] <= arrayGamma[gammaMaxIndex]) && (arrayC[i] - arrayC[cMaxIndex] <= 1)){
+                        cMaxIndex = i;
+                        gammaMaxIndex = j;
+                    }
                 }
             }
         }
@@ -212,7 +222,7 @@ public class SVM {
             gridSearch(cRange,gammaRange);
             param.C = bestC;
             param.gamma = bestGamma;
-            System.out.println("ENDED, BEST C: " + bestC + " BEST GAMMA: " + bestGamma + "BEST ACCURANCY: " + bestAcc );
+            System.out.println("ENDED, BEST C: " + bestC + " BEST GAMMA: " + bestGamma + "BEST ACCURACY: " + bestAcc );
             hyperParams.setC(bestC);
             hyperParams.setGamma(bestGamma);
             hyperParams.setAcc(bestAcc);
