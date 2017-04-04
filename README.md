@@ -4,7 +4,7 @@ Składa się ze strony internetowej, skryptów pobierających dane o użytkownik
 Program wykorzystuje algorytm maszyny wektorów wspierających (support vector machine).
 [Szczegółowy opis](/doc/pracainz.pdf)
 
-#krótki opis:
+# Krótki opis:
 1. ![GitHub Logo](/doc/0002.jpg)
 2. ![GitHub Logo](/doc/0003.jpg)
 3. ![GitHub Logo](/doc/0004.jpg)
