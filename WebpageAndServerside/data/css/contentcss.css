@@ -1,0 +1,98 @@
+.topImage{
+	float:left;
+	height:20em;
+	width:67%;
+	border-bottom:solid 0.7em #fff;
+	position: relative;
+}
+
+.ret{
+	width:100%;
+	height:100%;
+	text-decoration:none;
+	color:red;
+}
+.ret:after{
+	content:'';
+	display:block;
+	clear:both;
+}
+
+.topImageRightBorder{
+	background-color:black;
+	float:right;
+	width:33%;
+	height:20em;
+	color:#B0B0B0;
+	text-align:center;
+	-webkit-transition: all 0.3s;
+	-moz-transition: all 0.3s;
+	-ms-transition: all 0.3s;
+	-o-transition: all 0.3s;
+	transition: all 0.3s;
+}
+
+.topImageRightBorder:hover{
+	background-color:#303030;
+	color:white;
+}
+
+.topImageRightBorder:before{
+	content:'';
+	display:block;
+	padding:4.5em;
+}
+
+
+.middleWrap > .leftRow{
+	float:left;
+	width:66%;
+}
+
+.titleImage{
+	width:35%;
+	height:15em;
+	float:left;
+	
+}
+.titleImage > div{
+	width:95%;
+	height:100%;
+	
+}
+
+.titleImage > div > img{
+	width:100%;
+	height:100%;
+}
+.middleWrap > .leftRow > .title{
+	float:left;
+	width:65%;
+	font-weight: bold;
+	background-color:#E0E0E0;
+}
+.middleWrap > .leftRow > .title > p{
+	font-size:3em;
+	padding:0.2em;
+	border:0;
+	margin:0;
+	line-height:1em;
+	border-bottom: solid 0.5em #fff;
+}
+
+.middleWrap > .leftRow > .text{
+
+}
+.middleWrap > .leftRow > .text > p{
+	border:0;
+	margin:0;
+	display:inline;
+	font-size:1.4em;
+}
+
+.middleWrap > .rightRow{
+	float:right;
+}
+.footer{
+	border-top:solid 0.8em #fff;
+}
