@@ -1,7 +1,7 @@
-package src.CurveAnalyser.SVM;
+package SVM;
 
-import src.CurveAnalyser.Database.Database;
-import src.CurveAnalyser.GUI.Gui;
+import Database.Database;
+import GUI.Gui;
 
 import java.io.BufferedWriter;
 import java.io.File;

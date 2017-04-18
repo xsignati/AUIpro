@@ -1,16 +1,16 @@
-package src.CurveAnalyser.Analyser; /**
+package Analyser; /**
  * Created by Flexscan2243 on 20.04.2016.
  */
 
-import src.CurveAnalyser.Database.Database;
-import src.CurveAnalyser.GUI.Gui;
-import src.CurveAnalyser.PrepareInput.MetricCalculator;
-import src.CurveAnalyser.PrepareInput.BlockCalculator;
-import src.CurveAnalyser.PrepareInput.CurveCalculator;
-import src.CurveAnalyser.PrepareInput.ManualLoader;
-import src.CurveAnalyser.SVM.SVM;
-import src.CurveAnalyser.SVM.SVMtester;
-import src.CurveAnalyser.SVM.SVMtrainer;
+import Database.Database;
+import GUI.Gui;
+import PrepareInput.MetricCalculator;
+import PrepareInput.BlockCalculator;
+import PrepareInput.CurveCalculator;
+import PrepareInput.ManualLoader;
+import SVM.SVM;
+import SVM.SVMtester;
+import SVM.SVMtrainer;
 
 import java.io.IOException;
 import java.sql.SQLException;

@@ -1,4 +1,4 @@
-package src.CurveAnalyser.Database;
+package Database;
 
 import java.sql.*;
 

@@ -1,4 +1,4 @@
-package src.CurveAnalyser.SVM;
+package SVM;
 
 /**
  * Created by Flexscan2243 on 30.04.2016.

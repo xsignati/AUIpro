@@ -1,6 +1,6 @@
-package src.CurveAnalyser.PrepareInput;
+package PrepareInput;
 
-import src.CurveAnalyser.Database.Database;
+import Database.Database;
 
 import java.sql.ResultSet;
 import java.sql.SQLException;

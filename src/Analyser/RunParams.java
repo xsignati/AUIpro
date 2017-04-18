@@ -1,9 +1,8 @@
-package src.CurveAnalyser.Analyser;
+package Analyser;
 
-import src.CurveAnalyser.Analyser.Analyser;
-import src.CurveAnalyser.GUI.Gui;
-import src.CurveAnalyser.SVM.SVM;
-import src.CurveAnalyser.SVM.SVMresult;
+import GUI.Gui;
+import SVM.SVM;
+import SVM.SVMresult;
 
 /**
  * Created by Xsignati on 18.04.2017.

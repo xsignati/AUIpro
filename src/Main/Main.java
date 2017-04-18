@@ -1,8 +1,8 @@
-package src.CurveAnalyser.Main;
+package Main;
 
-import src.CurveAnalyser.Analyser.Analyser;
-import src.CurveAnalyser.GUI.Gui;
-import src.CurveAnalyser.SVM.SVM;
+import Analyser.Analyser;
+import GUI.Gui;
+import SVM.SVM;
 
 import javax.swing.*;
 import java.awt.*;

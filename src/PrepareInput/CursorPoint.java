@@ -1,4 +1,4 @@
-package src.CurveAnalyser.PrepareInput;
+package PrepareInput;
 
 /**
  * Created by Flexscan2243 on 21.04.2016.

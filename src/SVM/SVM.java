@@ -1,4 +1,4 @@
-package src.CurveAnalyser.SVM;
+package SVM;
 
 import libsvm.*;
 

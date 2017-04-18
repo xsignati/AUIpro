@@ -1,4 +1,4 @@
-package src.CurveAnalyser.SVM;
+package SVM;
 
 /**
  * Created by Xsignati on 18.04.2017.

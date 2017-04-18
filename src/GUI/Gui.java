@@ -1,11 +1,11 @@
-package src.CurveAnalyser.GUI;
+package GUI;
 
 import com.intellij.uiDesigner.core.GridConstraints;
 import com.intellij.uiDesigner.core.GridLayoutManager;
-import src.CurveAnalyser.Analyser.Analyser;
-import src.CurveAnalyser.Analyser.RunParams;
-import src.CurveAnalyser.SVM.SVM;
-import src.CurveAnalyser.SVM.SVMresult;
+import Analyser.Analyser;
+import Analyser.RunParams;
+import SVM.SVM;
+import SVM.SVMresult;
 
 import javax.swing.*;
 import javax.swing.border.TitledBorder;
