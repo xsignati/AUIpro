@@ -14,27 +14,6 @@ if(isset($_SESSION['currentSessionId']) && session_id() == $_SESSION['currentSes
 			VALUES ( '$session', '$value->action', '$value->time', '$value->x', '$value->y')");
 		 }
 	 }
-	/* $bData = json_decode($_POST['bufferData']); */
-/* 	$file = 'ubi.txt';
-	$current = file_get_contents($file);
-	$current .= "done\n";
-	file_put_contents($file, $current); */
-	//old method
-/* 	$xxx = mysqli_real_escape_string($conn, $_POST['x']);
-	$yyy = mysqli_real_escape_string($conn, $_POST['y']);
-	$time = mysqli_real_escape_string($conn, $_POST['time']);
-	$action = mysqli_real_escape_string($conn, $_POST['action']);
-	$session = mysqli_real_escape_string($conn, $session); */
-	
-/* 	$sql2 = "INSERT INTO MouseTracks (sessionID, action, time, x, y)
-	VALUES ( '$session', '$action', '$time', '$xxx', '$yyy')"; */
-	//$conn->query($sql2);
-/* 	if ($conn->query($sql2) === TRUE) {
-		echo "query succesfull";
-	} else {
-		echo "Error  " . $conn->error;
-		return false;
-	} */
 	$conn->close();
 }
 

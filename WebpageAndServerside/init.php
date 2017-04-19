@@ -124,8 +124,6 @@ function init($serverName, $userName, $password, $dbName){
 
 		
 	}
-	
-	
 
 	$_SESSION['currentSessionId'] = session_id();
 	$conn->close();
